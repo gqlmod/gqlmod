@@ -99,8 +99,7 @@ class GqlLoader(ExtensionLoader):
             if errors:
                 raise find_first_error(errors)
         else:
-            # TODO: Error or warning?
-            pass
+            raise RuntimeError(f"No provider defined in {module.__name__}")
 
         mod = ast.Module(body=[
             build_func(provider, defin)
