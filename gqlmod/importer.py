@@ -8,6 +8,7 @@ import graphql
 from import_x import ExtensionLoader
 
 from ._mod_impl import __query__
+from .providers import query_for_schema
 
 
 def build_func(provider, definition):
@@ -90,10 +91,16 @@ class GqlLoader(ExtensionLoader):
     def handle_module(module, path):
         with open(path, 'rt', encoding='utf-8') as fobj:
             provider, code = read_code(fobj)
-        gast = graphql.parse(code)
+        gast = graphql.parse(graphql.Source(code, path))
 
-        # TODO: Validate that the provider is installed
-        # TODO: Validate against the schema
+        if provider is not None:
+            schema = query_for_schema(provider)
+            errors = graphql.validate(schema, gast)
+            if errors:
+                raise find_first_error(errors)
+        else:
+            # TODO: Error or warning?
+            pass
 
         mod = ast.Module(body=[
             build_func(provider, defin)
@@ -121,3 +128,13 @@ def read_code(fobj):
 
     fobj.seek(0)
     return provider, fobj.read()
+
+
+def find_first_error(errors):
+    locmap = {
+        loc: err
+        for err in errors
+        for loc in err.locations
+    }
+    locs = sorted(locmap.keys(), key=lambda l: (l.line, l.column))
+    return locmap[locs[0]]

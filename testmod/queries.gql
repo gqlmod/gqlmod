@@ -7,7 +7,7 @@ query HeroForEpisode($ep: Episode!) {
       primaryFunction
     }
     ... on Human {
-      height
+      homePlanet
     }
   }
 }
@@ -51,9 +51,10 @@ query Hero($episode: Episode, $withFriends: Boolean!) {
   }
 }
 
-mutation CreateReviewForEpisode($ep: Episode!, $review: ReviewInput!) {
-  createReview(episode: $ep, review: $review) {
-    stars
-    commentary
-  }
-}
+# Mutation isn't in the example schema
+# mutation CreateReviewForEpisode($ep: Episode!, $review: ReviewInput!) {
+#   createReview(episode: $ep, review: $review) {
+#     stars
+#     commentary
+#   }
+# }

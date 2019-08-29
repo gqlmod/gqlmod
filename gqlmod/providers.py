@@ -6,6 +6,7 @@ import contextvars
 import collections
 
 import pkg_resources
+import graphql
 
 provider_map = contextvars.ContextVar('provider_map')
 
@@ -69,4 +70,7 @@ def query_for_schema(provider):
     """
     Asks the given provider for its schema
     """
-    ...
+    query = graphql.get_introspection_query(descriptions=True)
+    res = exec_query(provider, query, {})
+    assert not res.errors
+    return graphql.build_client_schema(res.data)
