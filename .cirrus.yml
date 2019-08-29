@@ -16,3 +16,10 @@ build_task:
   script:
     - bork build
  
+ test_task:
+  container:
+    image: python:3
+
+  script:
+    - python setup.py test
+ 
