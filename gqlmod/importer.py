@@ -3,11 +3,11 @@ Allows importing .gql files as Python modules, tied into the rest of the
 library.
 """
 import ast
-from pathlib import Path
 
 import graphql
 from import_x import ExtensionLoader
-import astor
+
+from ._mod_impl import __query__
 
 
 def build_func(provider, definition):
@@ -15,10 +15,10 @@ def build_func(provider, definition):
     Builds a python function from a GraphQL AST definition
     """
     name = definition.name.value
-    print(name)
     source = graphql.print_ast(definition)
     assert definition.operation != graphql.OperationType.SUBSCRIPTION
     params = [build_param(var) for var in definition.variable_definitions]
+    # TODO: Line numbers
     return ast.FunctionDef(
         name=name,
         args=ast.arguments(
@@ -60,7 +60,6 @@ def build_param(var):
         nullable = True
     has_default = nullable or (var.default_value is not None)
     defaultvalue = gqlliteral2value(var.default_value)
-    print("\t", name, '= '+repr(defaultvalue) if has_default else "")
     return name, value2pyliteral(defaultvalue) if has_default else None
 
 
@@ -89,18 +88,20 @@ class GqlLoader(ExtensionLoader):
 
     @staticmethod
     def handle_module(module, path):
-        module.__query__ = ...
-
         with open(path, 'rt', encoding='utf-8') as fobj:
             provider, code = read_code(fobj)
         gast = graphql.parse(code)
+
+        # TODO: Validate against the schema
+
         mod = ast.Module(body=[
             build_func(provider, defin)
             for defin in gast.definitions
             if defin.kind == 'operation_definition'
         ])
         ast.fix_missing_locations(mod)
-        print(astor.to_source(mod))
+
+        module.__query__ = __query__
         code = compile(mod, path, 'exec')
         exec(code, vars(module))
 
