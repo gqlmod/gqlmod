@@ -1,5 +1,6 @@
 import gqlmod  # noqa
 import testmod.queries
+from pprint import pprint
 
 for name in dir(testmod.queries):
     if name.startswith('_'):
@@ -8,4 +9,4 @@ for name in dir(testmod.queries):
 
 print("")
 
-print(testmod.queries.HeroNameAndFriends())
+pprint(testmod.queries.HeroNameAndFriends())
