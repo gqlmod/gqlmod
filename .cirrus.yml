@@ -7,7 +7,7 @@ testmod_task:
   script:
     - python -m testmod
  
- build_task:
+build_task:
   container:
     image: python:3
 
