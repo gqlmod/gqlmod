@@ -1,0 +1,9 @@
+testmod_task:
+  container:
+    image: python:3
+
+  setup_script:
+    - pip install .
+  script:
+    - python -m testmod
+ 
