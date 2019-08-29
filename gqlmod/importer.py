@@ -92,6 +92,7 @@ class GqlLoader(ExtensionLoader):
             provider, code = read_code(fobj)
         gast = graphql.parse(code)
 
+        # TODO: Validate that the provider is installed
         # TODO: Validate against the schema
 
         mod = ast.Module(body=[
