@@ -1,0 +1,82 @@
+"""
+Allows importing .gql files as Python modules, tied into the rest of the
+library.
+"""
+import ast
+from pathlib import Path
+
+import graphql
+from import_x import ExtensionLoader
+import astor
+
+
+def build_func(definition):
+    """
+    Builds a python function from a GraphQL AST definition
+    """
+    name = definition.name.value
+    print(name)
+    source = graphql.print_ast(definition)
+    assert definition.operation != graphql.OperationType.SUBSCRIPTION
+    params = [build_param(var) for var in definition.variable_definitions]
+    return ast.FunctionDef(
+        name=name,
+        args=ast.arguments(
+            args=[],
+            defaults=[],
+            kwonlyargs=[ast.arg(arg=name, annotation=None) for name, _ in params],
+            kw_defaults=[val for _, val in params],
+            vararg=None,
+            kwarg=None,
+        ),
+        body=[],  # TODO
+        decorator_list=[],
+    )
+
+
+def build_param(var):
+    name = var.variable.name.value
+    # NOTE: Don't care about the type name until we can start building annotations
+    if var.type.kind == 'non_null_type':
+        # typ = var.type.type.name.value
+        nullable = False
+    elif var.type.kind == 'named_type':
+        # typ = var.type.name.value
+        nullable = True
+    has_default = nullable or (var.default_value is not None)
+    defaultvalue = pythonize_literal(var.default_value)
+    print("\t", name, '= '+repr(defaultvalue) if has_default else "")
+    return name, build_literal(defaultvalue) if has_default else None
+
+
+def build_literal(val):
+    if isinstance(val, int):
+        return ast.Num(n=val)
+    elif isinstance(val, float):
+        return ast.Num(n=val)
+    elif isinstance(val, str):
+        return ast.Str(s=val)
+    elif val is None:
+        return ast.NameConstant(value=None)
+    else:
+        raise ValueError(f"Can't translate {val!r}")
+
+
+def pythonize_literal(node):
+    if node is None:
+        return None
+    return graphql.value_from_ast_untyped(node)
+
+
+class GqlLoader(ExtensionLoader):
+    extension = '.gql'
+    auto_enable = True
+
+    @staticmethod
+    def handle_module(module, path):
+        code = Path(path).read_text()
+        gast = graphql.parse(code)
+        for defin in gast.definitions:
+            if defin.kind == 'operation_definition':
+                func = build_func(defin)
+                print(astor.to_source(func))
