@@ -16,7 +16,7 @@ build_task:
   script:
     - bork build
  
- test_task:
+test_task:
   container:
     image: python:3
 
