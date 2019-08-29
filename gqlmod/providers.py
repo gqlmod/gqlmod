@@ -4,6 +4,7 @@ Provider machinery
 import contextlib
 import contextvars
 import collections
+import functools
 
 import pkg_resources
 import graphql
@@ -66,6 +67,7 @@ def exec_query(provider, query, variables):
     return prov(query, variables)
 
 
+@functools.lru_cache()
 def query_for_schema(provider):
     """
     Asks the given provider for its schema
