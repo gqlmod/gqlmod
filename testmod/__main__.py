@@ -9,4 +9,6 @@ for name in dir(testmod.queries):
 
 print("")
 
-pprint(testmod.queries.HeroNameAndFriends())
+result = testmod.queries.HeroNameAndFriends()
+assert not result.errors
+pprint(result.data)
