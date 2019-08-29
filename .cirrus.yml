@@ -7,3 +7,12 @@ testmod_task:
   script:
     - python -m testmod
  
+ build_task:
+  container:
+    image: python:3
+
+  setup_script:
+    - pip install bork
+  script:
+    - bork build
+ 
