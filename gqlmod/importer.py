@@ -10,7 +10,7 @@ from import_x import ExtensionLoader
 import astor
 
 
-def build_func(definition):
+def build_func(provider, definition):
     """
     Builds a python function from a GraphQL AST definition
     """
@@ -29,7 +29,22 @@ def build_func(definition):
             vararg=None,
             kwarg=None,
         ),
-        body=[],  # TODO
+        body=[
+            ast.Return(
+                value=ast.Call(
+                    func=ast.Name(id='__query__', ctx=ast.Load()),
+                    args=[
+                        value2pyliteral(provider),
+                        value2pyliteral(source),
+
+                    ],
+                    keywords=[
+                        ast.keyword(arg=name, value=ast.Name(id=name, ctx=ast.Load()))
+                        for name, _ in params
+                     ],
+                ),
+            ),
+        ],
         decorator_list=[],
     )
 
@@ -44,12 +59,12 @@ def build_param(var):
         # typ = var.type.name.value
         nullable = True
     has_default = nullable or (var.default_value is not None)
-    defaultvalue = pythonize_literal(var.default_value)
+    defaultvalue = gqlliteral2value(var.default_value)
     print("\t", name, '= '+repr(defaultvalue) if has_default else "")
-    return name, build_literal(defaultvalue) if has_default else None
+    return name, value2pyliteral(defaultvalue) if has_default else None
 
 
-def build_literal(val):
+def value2pyliteral(val):
     if isinstance(val, int):
         return ast.Num(n=val)
     elif isinstance(val, float):
@@ -62,7 +77,7 @@ def build_literal(val):
         raise ValueError(f"Can't translate {val!r}")
 
 
-def pythonize_literal(node):
+def gqlliteral2value(node):
     if node is None:
         return None
     return graphql.value_from_ast_untyped(node)
@@ -74,9 +89,33 @@ class GqlLoader(ExtensionLoader):
 
     @staticmethod
     def handle_module(module, path):
-        code = Path(path).read_text()
+        module.__query__ = ...
+
+        with open(path, 'rt', encoding='utf-8') as fobj:
+            provider, code = read_code(fobj)
         gast = graphql.parse(code)
-        for defin in gast.definitions:
-            if defin.kind == 'operation_definition':
-                func = build_func(defin)
-                print(astor.to_source(func))
+        mod = ast.Module(body=[
+            build_func(provider, defin)
+            for defin in gast.definitions
+            if defin.kind == 'operation_definition'
+        ])
+        ast.fix_missing_locations(mod)
+        print(astor.to_source(mod))
+        code = compile(mod, path, 'exec')
+        exec(code, vars(module))
+
+
+def read_code(fobj):
+    provider = None
+    # Provider is "#~provider~", ignoring whitespace, and most be in an initial
+    # block of #'s
+    for line in fobj:
+        line = line.strip().replace(' ', '').replace('\t', '')
+        if line.startswith('#~') and line.endswith('~'):
+            provider = line[2:-1]
+            break
+        elif not line.startswith('#'):
+            break
+
+    fobj.seek(0)
+    return provider, fobj.read()

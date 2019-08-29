@@ -1,4 +1,4 @@
-#!starwars
+#~starwars~
 
 query HeroForEpisode($ep: Episode!) {
   hero(episode: $ep) {
