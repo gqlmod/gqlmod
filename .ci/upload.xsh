@@ -25,11 +25,7 @@ else:
 
 print("Uploading to test repo...")
 
-twine upload \
-    --repository-url @(PYPI_TEST_REPO) \
-    --username __token__ \
-    --password "$TWINE_TEST_TOKEN" \
-    @(dists)
+twine upload --repository-url @(PYPI_TEST_REPO) --username __token__ --password $TWINE_TEST_TOKEN @(dists)
 
 
 print("")
@@ -42,7 +38,7 @@ if $CIRRUS_RELEASE:
         with dist.open('rb') as fobj:
             with urlopen(Request(
                 url=dest_url,
-                method='POST'
+                method='POST',
                 data=fobj,
                 headers={
                     "Authorization": f"token {$GITHUB_TOKEN}",
@@ -57,8 +53,4 @@ if $CIRRUS_RELEASE:
     print("")
 
     print("Uploading to PyPI...")
-    twine upload \
-        --repository-url @(PYPI_PROD_REPO) \
-        --username __token__ \
-        --password "$TWINE_PROD_TOKEN" \
-        @(dists)
+    twine upload --repository-url @(PYPI_PROD_REPO) --username __token__ --password $TWINE_PROD_TOKEN @(dists)
