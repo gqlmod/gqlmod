@@ -17,7 +17,11 @@ with tempfile.TemporaryDirectory() as td:
 
 dists = [f for f in pg`**` if '+' not in f.name]
 
-print("Found dists:", *dists)
+if not dists:
+    print("No uploadable dists found, skipping upload")
+    sys.exit(0)
+else:
+    print("Found dists:", *dists)
 
 print("Uploading to test repo...")
 
