@@ -1,5 +1,6 @@
 from gqlmod.providers import get_provider, with_provider
 
+
 def test_provider_change():
     orig = get_provider('starwars')
     with with_provider('starwars'):
@@ -7,4 +8,4 @@ def test_provider_change():
         assert orig is not new
 
     old = get_provider('starwars')
-    assert old is new
+    assert old is orig
