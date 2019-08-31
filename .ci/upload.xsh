@@ -19,13 +19,11 @@ with tempfile.TemporaryDirectory() as td:
         zipdata = resp.read()
 
     with zipfile.ZipFile(io.BytesIO(zipdata)) as zf:
-        nl = zf.namelist()
-        print(f"Found {len(nl)} files from build:", *nl)
+        # nl = zf.namelist()
+        # print(f"Found {len(nl)} files from build:", *nl)
         zf.extractall()
 
-    print("")
-
-    dists = [f for f in pg`**` if '+' not in f.name]
+    dists = [f for f in pg`**` if '+' not in f.name and f.is_file()]
 
     if not dists:
         print("No uploadable dists found, skipping upload")
@@ -36,7 +34,6 @@ with tempfile.TemporaryDirectory() as td:
     print("Uploading to test repo...")
 
     twine upload --repository-url @(PYPI_TEST_REPO) --username __token__ --password $TWINE_TEST_TOKEN @(dists)
-
 
     print("")
 
