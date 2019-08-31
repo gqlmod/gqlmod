@@ -37,7 +37,7 @@ with tempfile.TemporaryDirectory() as td:
 
     print("")
 
-    if $CIRRUS_RELEASE:
+    if 'CIRRUS_RELEASE' in ${...}:
         print("Uploading to GitHub...")
         for dist in dists:
             print(f"\t{dist.name}...")
