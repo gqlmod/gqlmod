@@ -75,4 +75,26 @@ def query_for_schema(provider):
     query = graphql.get_introspection_query(descriptions=True)
     res = exec_query(provider, query, {})
     assert not res.errors
-    return graphql.build_client_schema(res.data)
+    schema = graphql.build_client_schema(res.data)
+    schema = insert_builtins(schema)
+    return schema
+
+
+BUILTIN_SCALARS = (
+    'Int',
+    'Float',
+    'String',
+    'Boolean',
+    'ID',
+)
+
+
+# The GraphQL folks are arguing about to do this. I'm doing this to improve
+# error messages.
+def insert_builtins(schema):
+    for scalar in BUILTIN_SCALARS:
+        if not schema.get_type(scalar):
+            schema = graphql.extend_schema(schema, graphql.parse(
+                f"scalar {scalar}"
+            ))
+    return schema
