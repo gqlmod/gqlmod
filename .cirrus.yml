@@ -27,13 +27,13 @@ flake8_task:
 build_task:
   container:
     image: python:3
-  dist_artifacts:
-    path: "dist/*"
   setup_script:
     - pip install bork
   script:
     - bork build
     - find dist
+  dist_artifacts:
+    path: "dist/**"
  
 
 upload_task:
