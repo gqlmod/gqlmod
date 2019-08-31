@@ -7,27 +7,48 @@ testmod_task:
   script:
     - python -m testmod
  
+
+test_task:
+  container:
+    image: python:3
+  script:
+    - python setup.py test
+
+
+flake8_task:
+  container:
+    image: python:3
+  setup_script:
+    - pip install flake8
+  script:
+    - flake8
+
+
 build_task:
   container:
     image: python:3
-
+  dist_cache:
+    folder: dist
   setup_script:
     - pip install bork
   script:
     - bork build
  
-test_task:
+
+upload_task:
+  only_if: $CIRRUS_BRANCH == 'master'
+  depends_on:
+    - build
+  env:
+    TWINE_TEST_TOKEN: "ENCRYPTED[8ec827e766c7e19734e4bbc99ecc8268a4c709b66330bc99224122c7a51fcfe876780b1e6e3fe2c4f882498aa02cb414]"
+    # TWINE_PROD_TOKEN: "ENCRYPTED[...]"
+    # GITHUB_TOKEN: "ENCRYPTED[...]"
+
   container:
-    image: python:3
+    image: xonsh/xonsh:slim
+
+  install_script:
+    - pip install twine
 
   script:
-    - python setup.py test
-
-flake8_task:
-  container:
-    image: python:3
-
-  setup_script:
-    - pip install flake8
-  script:
-    - flake8
+    - xonsh .ci/upload.xsh
