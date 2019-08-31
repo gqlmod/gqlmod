@@ -8,7 +8,7 @@ for name in dir(testmod.queries):
     print(name, repr(getattr(testmod.queries, name)))
 
 qnames = {name for name in dir(testmod.queries) if not name.startswith('_')}
-assert qnames == {'Hero', 'HeroComparison', 'HeroForEpisode', 'HeroNameAndFriends'}
+assert qnames == {'Hero', 'HeroForEpisode', 'HeroNameAndFriends'}
 assert all(callable(getattr(testmod.queries, name)) for name in qnames)
 
 print("")
