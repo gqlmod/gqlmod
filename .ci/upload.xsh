@@ -1,4 +1,5 @@
 #!/usr/bin/xonsh
+import tempfile
 from urllib.request import urlopen, Request
 import zipfile
 
