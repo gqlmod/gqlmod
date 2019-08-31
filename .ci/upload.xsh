@@ -23,45 +23,45 @@ with tempfile.TemporaryDirectory() as td:
         print(f"Found {len(nl)} files from build:", *nl)
         zf.extractall()
 
-print("")
+    print("")
 
-dists = [f for f in pg`**` if '+' not in f.name]
+    dists = [f for f in pg`**` if '+' not in f.name]
 
-if not dists:
-    print("No uploadable dists found, skipping upload")
-    sys.exit(0)
-else:
-    print("Found dists:", *dists)
+    if not dists:
+        print("No uploadable dists found, skipping upload")
+        sys.exit(0)
+    else:
+        print("Found dists:", *dists)
 
-print("Uploading to test repo...")
+    print("Uploading to test repo...")
 
-twine upload --repository-url @(PYPI_TEST_REPO) --username __token__ --password $TWINE_TEST_TOKEN @(dists)
+    twine upload --repository-url @(PYPI_TEST_REPO) --username __token__ --password $TWINE_TEST_TOKEN @(dists)
 
-
-print("")
-
-if $CIRRUS_RELEASE:
-    print("Uploading to GitHub...")
-    for dist in dists:
-        print(f"\t{dist.name}...")
-        dest_url = f"https://uploads.github.com/repos/{$CIRRUS_REPO_FULL_NAME}/releases/{$CIRRUS_RELEASE}/assets?name={dist.name}"
-        with dist.open('rb') as fobj:
-            resp = urlopen(Request(
-                url=dest_url,
-                method='POST',
-                data=fobj,
-                headers={
-                    "Authorization": f"token {$GITHUB_TOKEN}",
-                    "Content-Type": "application/octet-stream",
-                },
-            ))
-        with resp:
-            if resp.getcode() >= 400:
-                print(f"Error: {resp.getcode()}")
-                print(str(resp.info()))
-                sys.exit(1)
 
     print("")
 
-    print("Uploading to PyPI...")
-    twine upload --repository-url @(PYPI_PROD_REPO) --username __token__ --password $TWINE_PROD_TOKEN @(dists)
+    if $CIRRUS_RELEASE:
+        print("Uploading to GitHub...")
+        for dist in dists:
+            print(f"\t{dist.name}...")
+            dest_url = f"https://uploads.github.com/repos/{$CIRRUS_REPO_FULL_NAME}/releases/{$CIRRUS_RELEASE}/assets?name={dist.name}"
+            with dist.open('rb') as fobj:
+                resp = urlopen(Request(
+                    url=dest_url,
+                    method='POST',
+                    data=fobj,
+                    headers={
+                        "Authorization": f"token {$GITHUB_TOKEN}",
+                        "Content-Type": "application/octet-stream",
+                    },
+                ))
+            with resp:
+                if resp.getcode() >= 400:
+                    print(f"Error: {resp.getcode()}")
+                    print(str(resp.info()))
+                    sys.exit(1)
+
+        print("")
+
+        print("Uploading to PyPI...")
+        twine upload --repository-url @(PYPI_PROD_REPO) --username __token__ --password $TWINE_PROD_TOKEN @(dists)
