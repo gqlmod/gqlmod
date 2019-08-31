@@ -1,4 +1,5 @@
 #!/usr/bin/xonsh
+import io
 import tempfile
 from urllib.request import urlopen, Request
 import zipfile
@@ -13,7 +14,10 @@ PYPI_PROD_REPO = "https://pypi.org/legacy/"
 with tempfile.TemporaryDirectory() as td:
     cd @(td)
 
-    with zipfile.ZipFile(urlopen(ARTIFACTS_URL)) as zf:
+    with urlopen(ARTIFACTS_URL) as resp:
+        zipdata = resp.read()
+
+    with zipfile.ZipFile(io.BytesIO(zipdata)) as zf:
         zf.extractall()
 
 dists = [f for f in pg`**` if '+' not in f.name]
