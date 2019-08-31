@@ -24,6 +24,8 @@ class PyTest(TestCommand):
 
 
 setup(
-    use_scm_version=True,
+    use_scm_version={
+        'local_scheme': 'dirty-tag',
+    },
     cmdclass={'test': PyTest},
 )
