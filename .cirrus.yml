@@ -22,4 +22,12 @@ test_task:
 
   script:
     - python setup.py test
- 
+
+flake8_task:
+  container:
+    image: python:3
+
+  setup_script:
+    - pip install flake8
+  script:
+    - flake8

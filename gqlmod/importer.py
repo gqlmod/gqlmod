@@ -42,7 +42,7 @@ def build_func(provider, definition):
                     keywords=[
                         ast.keyword(arg=name, value=ast.Name(id=name, ctx=ast.Load()))
                         for name, _ in params
-                     ],
+                    ],
                 ),
             ),
         ],
