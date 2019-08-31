@@ -11,7 +11,7 @@ PYPI_PROD_REPO = "https://pypi.org/legacy/"
 
 
 with tempfile.TemporaryDirectory() as td:
-    cd @(td.name)
+    cd @(td)
 
     with zipfile.ZipFile(urlopen(ARTIFACTS_URL)) as zf:
         zf.extractall()
@@ -37,7 +37,7 @@ if $CIRRUS_RELEASE:
         print(f"\t{dist.name}...")
         dest_url = f"https://uploads.github.com/repos/{$CIRRUS_REPO_FULL_NAME}/releases/{$CIRRUS_RELEASE}/assets?name={dist.name}"
         with dist.open('rb') as fobj:
-            with urlopen(Request(
+            resp = urlopen(Request(
                 url=dest_url,
                 method='POST',
                 data=fobj,
@@ -45,11 +45,12 @@ if $CIRRUS_RELEASE:
                     "Authorization": f"token {$GITHUB_TOKEN}",
                     "Content-Type": "application/octet-stream",
                 },
-            )) as resp:
-                if resp.getcode() >= 400:
-                    print(f"Error: {resp.getcode()}")
-                    print(str(resp.info()))
-                    sys.exit(1)
+            ))
+        with resp:
+            if resp.getcode() >= 400:
+                print(f"Error: {resp.getcode()}")
+                print(str(resp.info()))
+                sys.exit(1)
 
     print("")
 
