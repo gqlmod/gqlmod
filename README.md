@@ -39,3 +39,13 @@ from mygql import HeroForEpisode
 
 print(HeroForEpisode(ep='JEDI'))
 ```
+
+
+Why
+---
+
+So why use this?
+
+* Strong validation as soon as possible (when the modules are imported)
+* All the work is done at warmup, not when the query is made
+* I think not mixing languages produces cleaner code?
