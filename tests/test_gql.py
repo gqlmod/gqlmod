@@ -1,5 +1,6 @@
-import gqlmod  # noqa
-import testmod.queries
+import gqlmod
+gqlmod.enable_gql_import()
+import testmod.queries  # noqa
 
 
 def test_names():

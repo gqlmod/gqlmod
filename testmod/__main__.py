@@ -1,6 +1,8 @@
-import gqlmod  # noqa
+import gqlmod
 import testmod.queries
 from pprint import pprint
+
+gqlmod.enable_gql_import()
 
 for name in dir(testmod.queries):
     if name.startswith('_'):
