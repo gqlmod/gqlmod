@@ -19,9 +19,11 @@ with tempfile.TemporaryDirectory() as td:
         zipdata = resp.read()
 
     with zipfile.ZipFile(io.BytesIO(zipdata)) as zf:
+        nl = zf.namelist()
+        print(f"Found {len(nl)} files from build:", *nl)
         zf.extractall()
 
-find
+print("")
 
 dists = [f for f in pg`**` if '+' not in f.name]
 
