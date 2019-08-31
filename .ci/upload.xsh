@@ -21,6 +21,8 @@ with tempfile.TemporaryDirectory() as td:
     with zipfile.ZipFile(io.BytesIO(zipdata)) as zf:
         zf.extractall()
 
+find
+
 dists = [f for f in pg`**` if '+' not in f.name]
 
 if not dists:
