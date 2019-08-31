@@ -31,7 +31,6 @@ build_task:
     - pip install bork
   script:
     - bork build
-    - find dist
   dist_artifacts:
     path: "dist/**"
  
