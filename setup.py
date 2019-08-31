@@ -24,5 +24,6 @@ class PyTest(TestCommand):
 
 
 setup(
+    use_scm_version=True,
     cmdclass={'test': PyTest},
 )
