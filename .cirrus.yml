@@ -33,6 +33,7 @@ build_task:
     - pip install bork
   script:
     - bork build
+    - find dist
  
 
 upload_task:

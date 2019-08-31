@@ -1,5 +1,6 @@
 #!/usr/bin/xonsh
 import io
+import sys
 import tempfile
 from urllib.request import urlopen, Request
 import zipfile
