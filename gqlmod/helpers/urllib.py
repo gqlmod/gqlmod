@@ -1,6 +1,6 @@
 """
 Helpers for using urllib to build a provider. You probably want
-UrllibJsonProvider.
+:py:class:`UrllibJsonProvider`.
 
 Requires the no extras.
 """
@@ -14,15 +14,17 @@ class UrllibProvider:
     """
     Help build an HTTP-based provider based on requests.
 
-    You should fill-in endpoint and possibly overrirde modify_request()
+    You should fill-in :py:attr:`endpoint` and possibly override
+    :py:meth:`modify_request()`.
     """
+    #: The URL to send requests to
     endpoint: str
 
     def modify_request(self, req):
         """
         Apply policies about the request, primarily authentication.
 
-        Accepts a urllib.request.Request object.
+        Accepts a :py:class:`urllib.request.Request` object.
         """
 
     def _build_request(self, query, variables):
@@ -46,7 +48,7 @@ class UrllibProvider:
 
 class UrllibJsonProvider(UrllibProvider):
     """
-    UrllibProvider that uses a JSON-based POST
+    A :py:class:`UrllibProvider` that uses a JSON-based POST
     """
     def _build_request(self, query, variables):
         data = json.dumps({
