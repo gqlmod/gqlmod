@@ -109,6 +109,8 @@ Here is a list of some maintained providers:
 API Reference
 -------------
 
+.. py:module:: gqlmod
+
 .. autofunction:: gqlmod.with_provider
 
 .. autofunction:: gqlmod.enable_gql_import

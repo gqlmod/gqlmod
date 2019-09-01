@@ -1,5 +1,5 @@
-Welcome to gqlmod's documentation!
-==================================
+gqlmod: Importing GraphQL
+=========================
 
 gqlmod allows you to import GraphQL Query (``.gql``) files as modules and call
 the queries and mutations defined there. It will validate your queries at
