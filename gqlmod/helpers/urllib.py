@@ -14,7 +14,7 @@ class UrllibProvider:
     """
     Help build an HTTP-based provider based on requests.
 
-    You should fill-in :py:attr:`endpoint` and possibly override
+    You should fill in :py:attr:`endpoint` and possibly override
     :py:meth:`modify_request()`.
     """
     #: The URL to send requests to

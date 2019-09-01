@@ -11,7 +11,7 @@ class AiohttpProvider:
     """
     Help build an HTTP-based provider based on aiohttp.
 
-    You should fill-in :py:attr:`endpoint` and possibly override
+    You should fill in :py:attr:`endpoint` and possibly override
     :py:meth:`modify_request_args()`.
     """
     #: The URL to send requests to.
