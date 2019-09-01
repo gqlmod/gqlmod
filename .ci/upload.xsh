@@ -10,7 +10,6 @@ $RAISE_SUBPROC_ERROR = True
 
 ARTIFACTS_URL = f"https://api.cirrus-ci.com/v1/artifact/build/{$CIRRUS_BUILD_ID}/build/dist.zip"
 PYPI_TEST_REPO = "https://test.pypi.org/legacy/"
-PYPI_PROD_REPO = "https://pypi.org/legacy/"
 
 
 with tempfile.TemporaryDirectory() as td:
@@ -63,4 +62,4 @@ with tempfile.TemporaryDirectory() as td:
         print("")
 
         print("Uploading to PyPI...")
-        twine upload --repository-url @(PYPI_PROD_REPO) --username __token__ --password $TWINE_PROD_TOKEN @(dists)
+        twine upload --username __token__ --password $TWINE_PROD_TOKEN @(dists)
