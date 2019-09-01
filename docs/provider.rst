@@ -84,7 +84,15 @@ Note that many of them have additional requirements, which are encapsulated in e
 
 
 urllib
-------
+~~~~~~
 
 .. automodule:: gqlmod.helpers.urllib
    :members:
+
+
+aiohttp
+~~~~~~~
+
+.. automodule:: gqlmod.helpers.aiohttp
+   :members:
+

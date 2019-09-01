@@ -1,7 +1,7 @@
 """
-Helpers for using aiohttp to build a provider.
+Helpers for using :py:mod:`aiohttp` to build a provider.
 
-Requires the aiohttp extra.
+Requires the ``aiohttp`` extra.
 """
 import aiohttp
 import graphql
@@ -11,14 +11,18 @@ class AiohttpProvider:
     """
     Help build an HTTP-based provider based on aiohttp.
 
-    You should fill-in endpoint and possibly overrirde modify_request_args()
+    You should fill-in :py:attr:`endpoint` and possibly override
+    :py:meth:`modify_request_args()`.
     """
+    #: The URL to send requests to.
     endpoint: str
 
+    #: Timeout policy to use, if any.
     timeout: aiohttp.ClientTimeout = None
+    #: Whether a JSON-based or form-like request should be used.
     use_json: bool = False
 
-    def modify_request_args(self, req):
+    def modify_request_args(self, kwargs):
         """
         Apply policies about the request, primarily authentication.
         """
