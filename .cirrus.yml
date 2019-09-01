@@ -27,12 +27,11 @@ flake8_task:
 docs_task:
   skip: $CIRRUS_BRANCH =~ '.*\.tmp'
   container:
-    image: python:3.7-slim
+    image: python:3
 
   install_script:
-    - apt update || true ; apt install -qq -y make
-    - pip install --upgrade-strategy eager -U sphinx
-    - pip install .
+    - pip install --upgrade-strategy eager -U -r docs/requirements.txt
+    - pip install -e .
 
   script:
     - make -C docs/ linkcheck
