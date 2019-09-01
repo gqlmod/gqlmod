@@ -1,2 +1,3 @@
 sphinx>2.0
 sphinx_rtd_theme
+git+https://github.com/astronouth7303/pygments-graphql-lexer.git
