@@ -3,6 +3,7 @@ import io
 import sys
 import tempfile
 from urllib.request import urlopen, Request
+from urllib.error import HTTPError
 import zipfile
 
 $RAISE_SUBPROC_ERROR = True
@@ -43,20 +44,20 @@ with tempfile.TemporaryDirectory() as td:
             print(f"\t{dist.name}...")
             dest_url = f"https://uploads.github.com/repos/{$CIRRUS_REPO_FULL_NAME}/releases/{$CIRRUS_RELEASE}/assets?name={dist.name}"
             with dist.open('rb') as fobj:
-                resp = urlopen(Request(
-                    url=dest_url,
-                    method='POST',
-                    data=fobj,
-                    headers={
-                        "Authorization": f"token {$GITHUB_TOKEN}",
-                        "Content-Type": "application/octet-stream",
-                    },
-                ))
-            with resp:
-                if resp.getcode() >= 400:
-                    print(f"Error: {resp.getcode()}")
-                    print(str(resp.info()))
-                    sys.exit(1)
+                try:
+                    resp = urlopen(Request(
+                        url=dest_url,
+                        method='POST',
+                        data=fobj,
+                        headers={
+                            "Authorization": f"token {$GITHUB_TOKEN}",
+                            "Content-Type": "application/octet-stream",
+                        },
+                    ))
+                except HTTPError as exc:
+                    print(exc.headers)
+                    print(exc.read())
+                    raise
 
         print("")
 
