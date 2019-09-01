@@ -44,7 +44,7 @@ class UrllibProvider:
         )
 
 
-class UrllibJsonProvider:
+class UrllibJsonProvider(UrllibProvider):
     """
     UrllibProvider that uses a JSON-based POST
     """
@@ -63,7 +63,7 @@ class UrllibJsonProvider:
 # TODO: Implement this. The big problem is that it's not super clear how
 #       JSON-ish data should map to x-www-form-urlencoded
 # See: https://docs.python.org/3/library/urllib.request.html#urllib.request.Request
-# class UrllibFormProvider:
+# class UrllibFormProvider(UrllibProvider):
 #     """
 #     UrllibProvider that uses a form-based POST
 #     """
