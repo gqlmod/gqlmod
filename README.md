@@ -1,6 +1,8 @@
 Importable GraphQL modules
 ==========================
 
+[![Documentation Status](https://readthedocs.org/projects/gqlmod/badge/?version=master)](https://gqlmod.readthedocs.io/)
+
 `gqlmod` allows you to keep your GraphQL queries in `.gql` files and import them
 as modules.
 
