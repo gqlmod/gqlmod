@@ -51,7 +51,7 @@ def get_provider(name):
 @contextlib.contextmanager
 def with_provider(name, **params):
     """
-    Uses a new instances of the provider (with the given parameters) for the
+    Uses a new instance of the provider (with the given parameters) for the
     duration of the context.
     """
     pmap = _get_pmap()
