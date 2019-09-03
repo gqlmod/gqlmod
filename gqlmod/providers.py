@@ -72,10 +72,16 @@ def query_for_schema(provider):
     """
     Asks the given provider for its schema
     """
-    query = graphql.get_introspection_query(descriptions=True)
-    res = exec_query(provider, query, {})
-    assert not res.errors
-    schema = graphql.build_client_schema(res.data)
+    prov = get_provider(provider)
+    if hasattr(prov, 'get_schema_str'):
+        data = prov.get_schema_str()
+        schema = graphql.build_schema(data)
+    else:
+        query = graphql.get_introspection_query(descriptions=True)
+
+        res = exec_query(provider, query, {})
+        assert not res.errors
+        schema = graphql.build_client_schema(res.data)
     schema = insert_builtins(schema)
     return schema
 
@@ -89,7 +95,7 @@ BUILTIN_SCALARS = (
 )
 
 
-# The GraphQL folks are arguing about to do this. I'm doing this to improve
+# The GraphQL folks are arguing about doing this. I'm doing this to improve
 # error messages.
 def insert_builtins(schema):
     for scalar in BUILTIN_SCALARS:
