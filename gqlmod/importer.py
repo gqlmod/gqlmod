@@ -42,7 +42,7 @@ def build_func(provider, definition, schema):
                     keywords=[
                         ast.keyword(arg=name, value=ast.Name(id=name, ctx=ast.Load()))
                         for name, _ in params
-                    ]+[
+                    ] + [
                         ast.keyword(arg=name, value=(
                             val if isinstance(val, ast.AST) else value2pyliteral(val)
                         ))
