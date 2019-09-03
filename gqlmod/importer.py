@@ -8,10 +8,10 @@ import graphql
 from import_x import ExtensionLoader
 
 from ._mod_impl import __query__
-from .providers import query_for_schema
+from .providers import query_for_schema, get_additional_kwargs
 
 
-def build_func(provider, definition):
+def build_func(provider, definition, schema):
     """
     Builds a python function from a GraphQL AST definition
     """
@@ -42,6 +42,11 @@ def build_func(provider, definition):
                     keywords=[
                         ast.keyword(arg=name, value=ast.Name(id=name, ctx=ast.Load()))
                         for name, _ in params
+                    ]+[
+                        ast.keyword(arg=name, value=(
+                            val if isinstance(val, ast.AST) else value2pyliteral(val)
+                        ))
+                        for name, val in get_additional_kwargs(provider, definition, schema).items()
                     ],
                 ),
             ),
@@ -93,16 +98,16 @@ class GqlLoader(ExtensionLoader):
             provider, code = read_code(fobj)
         gast = graphql.parse(graphql.Source(code, path))
 
-        if provider is not None:
+        if provider is None:
+            raise RuntimeError(f"No provider defined in {module.__name__}")
+        else:
             schema = query_for_schema(provider)
             errors = graphql.validate(schema, gast)
             if errors:
                 raise find_first_error(errors)
-        else:
-            raise RuntimeError(f"No provider defined in {module.__name__}")
 
         mod = ast.Module(body=[
-            build_func(provider, defin)
+            build_func(provider, defin, schema)
             for defin in gast.definitions
             if defin.kind == 'operation_definition'
         ])

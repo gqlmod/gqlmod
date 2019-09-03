@@ -43,7 +43,7 @@ def _get_pmap():
 
 def get_provider(name):
     """
-    Gets the current provider for name.
+    Gets the current provider by name.
     """
     return _get_pmap()[name]
 
@@ -63,6 +63,12 @@ def with_provider(name, **params):
 
 
 def exec_query(provider, query, variables):
+    """
+    Executes a query with the given variables.
+
+    NOTE: Some providers may expect additional variables. As this is an internal
+    API, this is likely undocumented.
+    """
     prov = get_provider(provider)
     return prov(query, variables)
 
@@ -104,3 +110,14 @@ def insert_builtins(schema):
                 f"scalar {scalar}"
             ))
     return schema
+
+
+def get_additional_kwargs(provider, gast, schema):
+    """
+    Gets the additional keywords to add to the query call, for codegen.
+    """
+    prov = get_provider(provider)
+    if hasattr(prov, 'codegen_extra_kwargs'):
+        return prov.codegen_extra_kwargs(gast, schema) or {}
+    else:
+        return {}
