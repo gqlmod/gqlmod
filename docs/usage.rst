@@ -105,6 +105,11 @@ Here is a list of some maintained providers:
 * ``starwars``: Builtin! A demo provider that works on static constant data.
 * ``cirrus-ci``: From `gqlmod-cirrusci <https://pypi.org/project/gqlmod-cirrusci/>`_, connects to `Cirrus CI <https://cirrus-ci.org/>`_
 
+You may be able to discover a provider at this places:
+
+* `The gqlmod topic on GitHub <https://github.com/topics/gqlmod>`_
+* `Searching gqlmod on PyPI <https://pypi.org/search/?q=gqlmod>`_
+
 
 API Reference
 -------------
