@@ -134,8 +134,8 @@ provider.
 
 **Parameters**:
 
-* ``graphql_ast``: (:py:class:`graphql.language.OperationDefinitionNode`) The AST of the GraphQL query in question
-* ``schema``: (:py:class:`graphql.type.GraphQLSchema`) The schema of the service
+* ``graphql_ast`` (positional, :py:class:`graphql.language.OperationDefinitionNode`): The AST of the GraphQL query in question
+* ``schema`` (positional, :py:class:`graphql.type.GraphQLSchema`): The schema of the service
 
 **Returns**: A :py:class:`dict` of the names mapping to either simple values or
 :py:class:`ast.AST` instances. (Note that the returned AST will be embedded into
