@@ -114,7 +114,7 @@ service or don't allow anonymous access at all.
 
 This method must be synchronous. An async variation is not supported.
 
-**Default behavior**: Issue an GraphQL introspection query via the standard query
+**Default behavior**: Issue a GraphQL introspection query via the standard query
 path.
 
 **Parameters**: None.
