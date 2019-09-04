@@ -70,15 +70,7 @@ def build_param(var):
 
 
 def value2pyliteral(val):
-    if isinstance(val, int):
-        return ast.Num(n=val)
-    elif isinstance(val, float):
-        return ast.Num(n=val)
-    elif isinstance(val, str):
-        return ast.Str(s=val)
-    elif isinstance(val, bytes):
-        return ast.Bytes(s=val)
-    elif val is None:
+    if val is None:
         return ast.NameConstant(value=None)
     elif val is ...:
         return ast.Ellipsis()
@@ -86,6 +78,14 @@ def value2pyliteral(val):
         return ast.NameConstant(value=True)
     elif val is False:
         return ast.NameConstant(value=False)
+    elif isinstance(val, int):
+        return ast.Num(n=val)
+    elif isinstance(val, float):
+        return ast.Num(n=val)
+    elif isinstance(val, str):
+        return ast.Str(s=val)
+    elif isinstance(val, bytes):
+        return ast.Bytes(s=val)
     else:
         raise ValueError(f"Can't translate {val!r} into a literal")
 
