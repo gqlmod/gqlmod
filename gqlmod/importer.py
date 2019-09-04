@@ -76,10 +76,18 @@ def value2pyliteral(val):
         return ast.Num(n=val)
     elif isinstance(val, str):
         return ast.Str(s=val)
+    elif isinstance(val, bytes):
+        return ast.Bytes(s=val)
     elif val is None:
         return ast.NameConstant(value=None)
+    elif val is ...:
+        return ast.Ellipsis()
+    elif val is True:
+        return ast.NameConstant(value=True)
+    elif val is False:
+        return ast.NameConstant(value=False)
     else:
-        raise ValueError(f"Can't translate {val!r}")
+        raise ValueError(f"Can't translate {val!r} into a literal")
 
 
 def gqlliteral2value(node):
