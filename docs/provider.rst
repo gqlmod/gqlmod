@@ -96,3 +96,47 @@ aiohttp
 .. automodule:: gqlmod.helpers.aiohttp
    :members:
 
+
+Extensions
+----------
+
+In addition to the core querying interface, providers may influence the import 
+process in a few different ways. These are all implemented as optional methods
+on the provider instance.
+
+
+``get_schema_str()``
+~~~~~~~~~~~~~~~~~~~~
+
+Providers may override the standard schema discovery mechanism by implementing
+``get_schema_str()``. This is useful for providers that don't have a primary 
+service or don't allow anonymous access at all.
+
+This method must be synchronous. An async variation is not supported.
+
+**Default behavior**: Issue an GraphQL introspection query via the standard query
+path.
+
+**Parameters**: None.
+
+**Returns**: A :py:class:`str` of the schema, in standard GraphQL schema
+language.
+
+
+``codegen_extra_kwargs()``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Providers may add keyword arguments (variables) to the query call inside the
+generated module. These will be passed through the query pipeline back to the
+provider.
+
+**Default behavior**: No additional variables are inserted.
+
+**Parameters**:
+
+* ``graphql_ast``: (:py:class:`graphql.language.OperationDefinitionNode`) The AST of the GraphQL query in question
+* ``schema``: (:py:class:`graphql.type.GraphQLSchema`) The schema of the service
+
+**Returns**: A :py:class:`dict` of the names mapping to either simple values or
+:py:class:`ast.AST` instances. (Note that the returned AST will be embedded into
+a right-hand expression context.)
