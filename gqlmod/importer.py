@@ -58,18 +58,8 @@ def build_func(provider, definition, schema):
 def build_param(var):
     name = var.variable.name.value
 
-    typ = var.type
-    nullable = True
-    # NOTE: Don't care about the type name until we can start building annotations
-    if typ.kind == 'non_null_type':
-        typ = typ.type
-        nullable = False
-    if isinstance(typ, graphql.GraphQLScalarType):
-        # typname = typ.name
-        pass
-    elif typ.kind == 'named_type':
-        # typname = type.name.value
-        pass
+    # TODO: How to handle lists?
+    nullable = (var.type.kind != 'non_null_type')
 
     has_default = nullable or (var.default_value is not None)
     defaultvalue = gqlliteral2value(var.default_value)
@@ -93,6 +83,19 @@ def value2pyliteral(val):
         return ast.Str(s=val)
     elif isinstance(val, bytes):
         return ast.Bytes(s=val)
+    elif isinstance(val, tuple):
+        return ast.Tuple(elts=[value2pyliteral(item) for item in val])
+    elif isinstance(val, list):
+        return ast.List(elts=[value2pyliteral(item) for item in val])
+    elif isinstance(val, dict):
+        return ast.Dict(
+            # .keys() and .values() have been documented to return things in the
+            # same order since Py2
+            keys=[value2pyliteral(item) for item in val.keys()],
+            values=[value2pyliteral(item) for item in val.values()],
+        )
+    elif isinstance(val, set):
+        return ast.Set(elts=[value2pyliteral(item) for item in val])
     else:
         raise ValueError(f"Can't translate {val!r} into a literal")
 
