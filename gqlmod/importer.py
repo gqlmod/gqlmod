@@ -57,13 +57,20 @@ def build_func(provider, definition, schema):
 
 def build_param(var):
     name = var.variable.name.value
+
+    typ = var.type
+    nullable = True
     # NOTE: Don't care about the type name until we can start building annotations
-    if var.type.kind == 'non_null_type':
-        # typ = var.type.type.name.value
+    if typ.kind == 'non_null_type':
+        typ = typ.type
         nullable = False
-    elif var.type.kind == 'named_type':
-        # typ = var.type.name.value
-        nullable = True
+    if isinstance(typ, graphql.GraphQLScalarType):
+        # typname = typ.name
+        pass
+    elif typ.kind == 'named_type':
+        # typname = type.name.value
+        pass
+
     has_default = nullable or (var.default_value is not None)
     defaultvalue = gqlliteral2value(var.default_value)
     return name, value2pyliteral(defaultvalue) if has_default else None
