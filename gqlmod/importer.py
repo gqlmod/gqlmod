@@ -66,7 +66,7 @@ def build_param(var):
     return name, value2pyliteral(defaultvalue) if has_default else None
 
 
-def value2pyliteral(val):
+def value2pyliteral(val):  # noqa: C901
     if val is None:
         return ast.NameConstant(value=None)
     elif val is ...:

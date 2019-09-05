@@ -27,13 +27,13 @@ class UrllibProvider:
         Accepts a :py:class:`urllib.request.Request` object.
         """
 
-    def _build_request(self, query, variables):
+    def build_request(self, query, variables):
         raise NotImplementedError
 
     def __call__(self, query, variables):
-        req = self._build_request(query, variables)
+        req = self.build_request(query, variables)
 
-        self.modify_request(req)
+        self.modify_request(req, variables)
 
         resp = urlopen(req)
         text = resp.read().decode('utf-8')  # JSON must be UTF-8
@@ -50,7 +50,7 @@ class UrllibJsonProvider(UrllibProvider):
     """
     A :py:class:`UrllibProvider` that uses a JSON-based POST
     """
-    def _build_request(self, query, variables):
+    def build_request(self, query, variables):
         data = json.dumps({
             'query': query,
             'variables': variables,
