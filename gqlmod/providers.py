@@ -9,6 +9,11 @@ import functools
 import pkg_resources
 import graphql
 
+
+__all__ = (
+    'with_provider', 'exec_query', 'query_for_schema', 'get_additional_kwargs',
+)
+
 provider_map = contextvars.ContextVar('provider_map')
 
 
