@@ -54,7 +54,7 @@ class UrllibJsonProvider(UrllibProvider):
         data = json.dumps({
             'query': query,
             'variables': variables,
-        }, indent=4).encode('utf-8')
+        }).encode('utf-8')
         headers = {
             'Content-Type': 'application/json',
         }
