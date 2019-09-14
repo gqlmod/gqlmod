@@ -106,23 +106,33 @@ def gqlliteral2value(node):
     return graphql.value_from_ast_untyped(node)
 
 
+def load_and_validate(path, fobj=None):
+    if fobj is None:
+        with open(path, 'rt', encoding='utf-8') as fobj:
+            provider, code = read_code(fobj)
+    else:
+        provider, code = read_code(fobj)
+
+    gast = graphql.parse(graphql.Source(code, path))
+
+    if provider is None:
+        raise RuntimeError(f"No provider defined in {path}")
+    else:
+        schema = query_for_schema(provider)
+        errors = graphql.validate(schema, gast)
+
+    return provider, gast, schema, errors
+
+
 class GqlLoader(ExtensionLoader):
     extension = '.gql'
     auto_enable = True
 
     @staticmethod
     def handle_module(module, path):
-        with open(path, 'rt', encoding='utf-8') as fobj:
-            provider, code = read_code(fobj)
-        gast = graphql.parse(graphql.Source(code, path))
-
-        if provider is None:
-            raise RuntimeError(f"No provider defined in {module.__name__}")
-        else:
-            schema = query_for_schema(provider)
-            errors = graphql.validate(schema, gast)
-            if errors:
-                raise find_first_error(errors)
+        provider, gast, schema, errors = load_and_validate(path)
+        if errors:
+            raise find_first_error(errors)
 
         mod = ast.Module(body=[
             build_func(provider, defin, schema)
@@ -163,3 +173,8 @@ def find_first_error(errors):
     }
     locs = sorted(locmap.keys(), key=lambda l: (l.line, l.column))
     return locmap[locs[0]]
+
+
+def scan_file(path, fobj=None):
+    _, _, _, errors = load_and_validate(path, fobj)
+    yield from errors
