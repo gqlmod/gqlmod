@@ -128,6 +128,11 @@ class GqlLoader(ExtensionLoader):
     extension = '.gql'
     auto_enable = True
 
+    @classmethod
+    def find_spec(cls, fullname, path, *_, **__):
+        print("find_spec", fullname, path)
+        return super().find_spec(fullname, path)
+
     @staticmethod
     def handle_module(module, path):
         provider, gast, schema, errors = load_and_validate(path)
