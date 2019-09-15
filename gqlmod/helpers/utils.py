@@ -23,10 +23,10 @@ def get_schema_fields(snode):
     if isinstance(snode, graphql.GraphQLField):
         snode = snode.type
     snode, *_ = unwrap_type(snode)
-    if isinstance(snode, graphql.GraphQLNamedType):
-        return snode.fields
-    elif isinstance(snode, graphql.GraphQLScalarType):
+    if isinstance(snode, graphql.GraphQLScalarType):  # Is subclass of GraphQLNamedType
         return {}
+    elif isinstance(snode, graphql.GraphQLNamedType):
+        return snode.fields
     else:
         raise TypeError(f"Dunno how to get the fields for {snode!r}")
 
@@ -89,7 +89,10 @@ def walk_variables(query_ast, schema):
         else:
             raise TypeError(f"Can't get type for {var!r}")
 
-        yield from walk_schema_node((name,), typ)
+        tname = typ.name.value
+        real_type = schema.get_type(tname)
+
+        yield from walk_schema_node((name,), real_type)
 
 
 class ScalarToJsonHelper:
