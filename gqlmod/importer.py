@@ -4,8 +4,12 @@ library.
 """
 import ast
 
+import pathlib
+import sys
+from importlib.abc import Loader, MetaPathFinder
+from importlib.util import spec_from_file_location
+
 import graphql
-from import_x import ExtensionLoader
 
 from ._mod_impl import __query__
 from .providers import query_for_schema, get_additional_kwargs
@@ -124,38 +128,6 @@ def load_and_validate(path, fobj=None):
     return provider, gast, schema, errors
 
 
-class GqlLoader(ExtensionLoader):
-    extension = '.gql'
-    auto_enable = True
-
-    @classmethod
-    def find_spec(cls, fullname, path, *_, **__):
-        print("find_spec", fullname, path)
-        rv = super().find_spec(fullname, path)
-        print("\t", rv)
-        return rv
-
-    @staticmethod
-    def handle_module(module, path):
-        provider, gast, schema, errors = load_and_validate(path)
-        if errors:
-            raise find_first_error(errors)
-
-        mod = ast.Module(body=[
-            build_func(provider, defin, schema)
-            for defin in gast.definitions
-            if defin.kind == 'operation_definition'
-        ])
-        ast.fix_missing_locations(mod)
-
-        # import astor
-        # print(astor.to_source(mod))
-
-        module.__query__ = __query__
-        code = compile(mod, path, 'exec')
-        exec(code, vars(module))
-
-
 def read_code(fobj):
     provider = None
     # Provider is "#~provider~", ignoring whitespace, and most be in an initial
@@ -180,6 +152,68 @@ def find_first_error(errors):
     }
     locs = sorted(locmap.keys(), key=lambda l: (l.line, l.column))
     return locmap[locs[0]]
+
+
+class GqlLoader(MetaPathFinder, Loader):
+
+    extension = '.gql'
+
+    def __enter__(self):
+        sys.meta_path.append(self)
+
+    def __exit__(self, *_):
+        sys.meta_path.remove(self)
+
+    @staticmethod
+    def _get_file_path(dir_path, file_name, extension):
+        path = pathlib.Path(dir_path).joinpath(file_name + extension)
+        if path.exists():
+            return path.resolve().as_posix()
+        return ""
+
+    @classmethod
+    def find_spec(cls, fullname, path, *_, **__):
+        """Return the spec of the module."""
+
+        print("find_spec", fullname, path)
+
+        if path is None:
+            path = sys.path
+
+        if '.' in fullname:
+            name = fullname.split(sep='.')[-1]
+        else:
+            name = fullname
+
+        for dir_name in path:
+            path = cls._get_file_path(dir_name, name, cls.extension)
+            if path:
+                return spec_from_file_location(name=fullname, location=path, loader=cls())
+
+        # could't import this one.
+        return None
+
+    def exec_module(self, module):
+        """Call the respective handler for this module."""
+        path = module.__spec__.origin
+
+        provider, gast, schema, errors = load_and_validate(path)
+        if errors:
+            raise find_first_error(errors)
+
+        mod = ast.Module(body=[
+            build_func(provider, defin, schema)
+            for defin in gast.definitions
+            if defin.kind == 'operation_definition'
+        ])
+        ast.fix_missing_locations(mod)
+
+        # import astor
+        # print(astor.to_source(mod))
+
+        module.__query__ = __query__
+        code = compile(mod, path, 'exec')
+        exec(code, vars(module))
 
 
 def scan_file(path, fobj=None):
