@@ -1,11 +1,11 @@
 import graphql
 
-__all__ = 'unwrap_type', 'walk_query', 'walk_variables', 'ScalarToJsonHelper'
+__all__ = 'unwrap_type', 'walk_query', 'walk_variables'
 
 
 def unwrap_type(node):
     """
-    Gets the true type.
+    Gets the true type node from an AST node.
 
     Returns the list of wrappers, the real type first and the outermost last
     """
