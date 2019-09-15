@@ -93,18 +93,3 @@ def walk_variables(query_ast, schema):
         real_type = schema.get_type(tname)
 
         yield from walk_schema_node((name,), real_type)
-
-
-class ScalarToJsonHelper:
-    """
-    Helps with custom scalars and conversion to/from JSON forms
-    """
-
-    def __init__(self, type_tree):
-        ...
-
-    def to_json(self, data):
-        ...
-
-    def from_json(self, data):
-        ...
