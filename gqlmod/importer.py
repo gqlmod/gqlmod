@@ -174,9 +174,6 @@ class GqlLoader(MetaPathFinder, Loader):
     @classmethod
     def find_spec(cls, fullname, path, *_, **__):
         """Return the spec of the module."""
-
-        print("find_spec", fullname, path)
-
         if path is None:
             path = sys.path
 
