@@ -13,6 +13,7 @@ and different contexts with those services.
    :caption: Contents:
 
    usage
+   cli
    provider
 
 
