@@ -131,7 +131,9 @@ class GqlLoader(ExtensionLoader):
     @classmethod
     def find_spec(cls, fullname, path, *_, **__):
         print("find_spec", fullname, path)
-        return super().find_spec(fullname, path)
+        rv = super().find_spec(fullname, path)
+        print("\t", rv)
+        return rv
 
     @staticmethod
     def handle_module(module, path):
