@@ -5,7 +5,7 @@ __all__ = 'unwrap_type', 'walk_query', 'walk_variables'
 
 def unwrap_type(node):
     """
-    Gets the true type node from an AST node.
+    Gets the true type node from an schema node.
 
     Returns the list of wrappers, the real type first and the outermost last
     """
@@ -18,12 +18,38 @@ def unwrap_type(node):
     return list(reversed(rv))
 
 
+def unwrap_type_node(node):
+    """
+    Gets the true type node from an AST node.
+
+    Returns the list of wrappers, the real type first and the outermost last
+    """
+    rv = []
+
+    while True:
+        rv.append(node)
+        if isinstance(node, graphql.NonNullTypeNode):
+            node = node.type
+            continue
+        elif isinstance(node, graphql.ListTypeNode):
+            node = node.type
+            continue
+        else:
+            break
+
+    return list(reversed(rv))
+
+
 def get_schema_fields(snode):
     # Start unwrapping
     if isinstance(snode, graphql.GraphQLField):
         snode = snode.type
+    elif isinstance(snode, graphql.GraphQLInputField):
+        snode = snode.type
     snode, *_ = unwrap_type(snode)
     if isinstance(snode, graphql.GraphQLScalarType):  # Is subclass of GraphQLNamedType
+        return {}
+    elif isinstance(snode, graphql.GraphQLEnumType):  # Is subclass of GraphQLNamedType
         return {}
     elif isinstance(snode, graphql.GraphQLNamedType):
         return snode.fields
@@ -79,15 +105,13 @@ def walk_variables(query_ast, schema):
     for var in query_ast.variable_definitions:
         name = var.variable.name.value
 
-        typ = var.type
-        if typ.kind == 'non_null_type':
-            typ = typ.type
+        typ, *_ = unwrap_type_node(var.type)
         if isinstance(typ, graphql.GraphQLScalarType):
             continue
         elif typ.kind == 'named_type':
             pass
         else:
-            raise TypeError(f"Can't get type for {var!r}")
+            raise TypeError(f"Can't get type for {var!r} ({typ!r})")
 
         tname = typ.name.value
         real_type = schema.get_type(tname)
