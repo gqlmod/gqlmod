@@ -38,8 +38,8 @@ integration).
           - uses: actions/checkout@v1
             with:
               fetch-depth: 1
-          - uses: go-build-it/gqlmod-check-action@master
+          - uses: gqlmod/check-action@master
             with:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-You do need to use the ``actions/checkout`` action before calling ``go-build-it/gqlmod-check-action``, and the ``GITHUB_TOKEN`` argument is required.
+You do need to use the ``actions/checkout`` action before calling ``gqlmod/check-action``, and the ``GITHUB_TOKEN`` argument is required.
