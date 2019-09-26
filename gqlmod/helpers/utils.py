@@ -57,14 +57,22 @@ def get_schema_fields(snode):
         raise TypeError(f"Dunno how to get the fields for {snode!r}")
 
 
-def walk_query_node(path, qnode, snode):
+def walk_query_node(path, qnode, snode, schema):
     for qfield in qnode.selection_set.selections:
-        name = qfield.name.value
-        fpath = path + (name,)
-        sfield = get_schema_fields(snode)[name]
-        yield fpath, qfield, sfield
+        if isinstance(qfield, graphql.InlineFragmentNode):
+            # Nothing to do on this field, just populate stuff for the recursion
+            type_name = qfield.type_condition.name.value
+            sfield = schema.get_type(type_name)
+            fpath = path
+        elif isinstance(qfield, graphql.FieldNode):
+            name = qfield.name.value
+            fpath = path + (name,)
+            sfield = get_schema_fields(snode)[name]
+            yield fpath, qfield, sfield
+        else:
+            raise TypeError(f"Can't handle a {type(qfield)} ({qfield!r})")
         if qfield.selection_set:
-            yield from walk_query_node(fpath, qfield, sfield)
+            yield from walk_query_node(fpath, qfield, sfield, schema)
 
 
 def walk_schema_node(path, snode):
@@ -89,7 +97,7 @@ def walk_query(query_ast, schema):
     elif query_ast.operation == graphql.OperationType.SUBSCRIPTION:
         root = schema.subscription_type
 
-    yield from walk_query_node((), query_ast, root)
+    yield from walk_query_node((), query_ast, root, schema)
 
 
 def walk_variables(query_ast, schema):
