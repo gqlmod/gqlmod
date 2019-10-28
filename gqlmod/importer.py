@@ -3,6 +3,7 @@ Allows importing .gql files as Python modules, tied into the rest of the
 library.
 """
 import ast
+import sys
 
 import graphql
 from import_x import ExtensionLoader
@@ -20,6 +21,14 @@ def build_func(provider, definition, schema):
     assert definition.operation != graphql.OperationType.SUBSCRIPTION
     params = [build_param(var) for var in definition.variable_definitions]
     # TODO: Line numbers
+
+    if sys.version_info >= (3, 8):
+        py38 = {
+            'posonlyargs': [],
+        }
+    else:
+        py38 = {}
+
     return ast.FunctionDef(
         name=name,
         args=ast.arguments(
@@ -29,6 +38,7 @@ def build_func(provider, definition, schema):
             kw_defaults=[val for _, val in params],
             vararg=None,
             kwarg=None,
+            **py38
         ),
         body=[
             ast.Return(
@@ -134,11 +144,18 @@ class GqlLoader(ExtensionLoader):
         if errors:
             raise find_first_error(errors)
 
+        if sys.version_info >= (3, 8):
+            py38 = {
+                'type_ignores': [],
+            }
+        else:
+            py38 = {}
+
         mod = ast.Module(body=[
             build_func(provider, defin, schema)
             for defin in gast.definitions
             if defin.kind == 'operation_definition'
-        ])
+        ], **py38)
         ast.fix_missing_locations(mod)
 
         # import astor
