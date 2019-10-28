@@ -28,6 +28,7 @@ def build_func(provider, definition, schema):
         }
     else:
         py38 = {}
+
     return ast.FunctionDef(
         name=name,
         args=ast.arguments(
@@ -143,11 +144,18 @@ class GqlLoader(ExtensionLoader):
         if errors:
             raise find_first_error(errors)
 
+        if sys.version_info >= (3, 8):
+            py38 = {
+                'type_ignores': [],
+            }
+        else:
+            py38 = {}
+
         mod = ast.Module(body=[
             build_func(provider, defin, schema)
             for defin in gast.definitions
             if defin.kind == 'operation_definition'
-        ])
+        ], **py38)
         ast.fix_missing_locations(mod)
 
         # import astor
