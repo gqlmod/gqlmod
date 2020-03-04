@@ -22,7 +22,7 @@ class AiohttpProvider:
     #: Whether a JSON-based or form-like request should be used.
     use_json: bool = False
 
-    def modify_request_args(self, kwargs):
+    def modify_request_args(self, variables, kwargs):
         """
         Apply policies about the request, primarily authentication.
         """
@@ -50,7 +50,7 @@ class AiohttpProvider:
             data_key: payload,
         }
 
-        self.modify_request_args(kwargs)
+        self.modify_request_args(variables, kwargs)
 
         resp = await self.session.post(self.endpoint, **kwargs)
         resp.raise_for_status()
