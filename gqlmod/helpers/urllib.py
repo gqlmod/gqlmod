@@ -20,7 +20,7 @@ class UrllibProvider:
     #: The URL to send requests to
     endpoint: str
 
-    def modify_request(self, req):
+    def modify_request(self, req, variables):
         """
         Apply policies about the request, primarily authentication.
 
