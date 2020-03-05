@@ -55,9 +55,15 @@ with tempfile.TemporaryDirectory() as td:
                         },
                     ))
                 except HTTPError as exc:
-                    print(exc.headers)
-                    print(exc.read())
-                    raise
+                    body = exc.read()
+                    data = json.loads(body.decode('utf-8'))
+
+                    if data['resource'] == 'ReleaseAsset' and data['code'] == 'already_exists':
+                        print(f"File {dist.name} already exists")
+                    else:
+                        print(exc.headers)
+                        print(body)
+                        raise
 
         print("")
 
