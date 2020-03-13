@@ -46,7 +46,6 @@ class AiohttpProvider:
 
         kwargs = {
             'timeout': self.timeout,
-            'verify': True,
             data_key: payload,
         }
 
