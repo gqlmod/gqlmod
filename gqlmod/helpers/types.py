@@ -1,33 +1,42 @@
 """
 Functions to help with typing of queries.
 """
-import weakref
 
 import graphql
 
-__all__ = 'get_type', 'get_definition'
+__all__ = 'get_type', 'get_definition', 'annotate'
 
-_type_annotations = weakref.WeakKeyDictionary()
-_ref_annotations = weakref.WeakKeyDictionary()
+SCHEMA_ATTR = '__schema'  # The schema object that provides the definition of this node
+DEF_ATTR = '__def'  # The query object that provides the definition of this node (variables, fragments)
 
 
-def get_type(node):
+def get_type(node, *, unwrap=False):
     """
-    Gets the schema object referenced by the given node.
+    Gets the schema type of the given node.
     """
     try:
-        return _type_annotations[node]
-    except KeyError:
-        pass
+        qltype = getattr(node, SCHEMA_ATTR)
+    except AttributeError:
+        return
+
+    if isinstance(qltype, graphql.GraphQLField):
+        qltype = qltype.type
+
+    if unwrap:
+        qltype = graphql.get_named_type(qltype)
+
+    return qltype
 
 
 def get_definition(node):
     """
-    Gets the AST object definining the given node
+    Gets the AST object definining the given node.
+
+    Like, a Variable node will point to a variable definition.
     """
     try:
-        return _ref_annotations[node]
-    except KeyError:
+        return getattr(node, DEF_ATTR)
+    except AttributeError:
         pass
 
 
@@ -50,65 +59,87 @@ class TypeAnnotationVisitor(graphql.Visitor):
             schema = self.schema.mutation_type
         elif node.operation == graphql.OperationType.SUBSCRIPTION:
             schema = self.schema.subscription_type
-        _type_annotations[node] = schema
+        setattr(node, SCHEMA_ATTR, schema)
+
+    def leave_fragment_definition(self, node, key, parent, path, ancestors):
+        # Copy type from the type
+        t = get_type(node.type_condition)
+        assert t is not None
+        setattr(node, SCHEMA_ATTR, t)
 
     # Explict type definitions
     def enter_named_type(self, node, key, parent, path, ancestors):
         name = node.name.value
-        _type_annotations[node] = self.schema.get_type(name)
+        node_type = self.schema.get_type(name)
+        setattr(node, SCHEMA_ATTR, node_type)
+
+        if isinstance(parent, graphql.InlineFragmentNode):
+            setattr(parent, SCHEMA_ATTR, node_type)
+            setattr(parent.selection_set, SCHEMA_ATTR, node_type)
 
     def leave_non_null_type(self, node, key, parent, path, ancestors):
         # Copy & wrap the type from the inner
         t = get_type(node.type)
         assert t is not None
-        _type_annotations[node] = graphql.GraphQLNonNull(t)
+        setattr(node, SCHEMA_ATTR, graphql.GraphQLNonNull(t))
 
     def leave_list_type(self, node, key, parent, path, ancestors):
         # Copy & wrap the type from the inner
         t = get_type(node.type)
         assert t is not None
-        _type_annotations[node] = graphql.GraphQLList(t)
+        setattr(node, SCHEMA_ATTR, graphql.GraphQLList(t))
 
     # Fields
     def enter_field(self, node, key, parent, path, ancestors):
         # Find the parent type, and then find our type on that.
         for p in reversed([*ancestors, parent]):
             # This should go until we find a field or operation definition
-            parent_schema = get_type(p)
+            parent_schema = get_type(p, unwrap=True)
             if parent_schema is not None:
                 break
         assert isinstance(parent_schema, graphql.GraphQLNamedType)
-        _type_annotations[node] = _type_annotations[node.selection_set] = \
-            parent_schema.fields[node.name.value]
+
+        node_schema = parent_schema.fields[node.name.value]
+        setattr(node, SCHEMA_ATTR, node_schema)
+        if node.selection_set is not None:
+            setattr(node.selection_set, SCHEMA_ATTR, node_schema)
 
     def enter_argument(self, node, key, parent, path, ancestors):
         # Find the parent type, and then find our type on that.
         for p in reversed([*ancestors, parent]):
             # This should go until we find a field
-            parent_schema = get_type(p)
-            if parent_schema is not None:
+            try:
+                parent_schema = getattr(p, SCHEMA_ATTR)
+            except AttributeError:
+                continue
+            else:
                 break
         assert isinstance(parent_schema, graphql.GraphQLField)
-        _type_annotations[node] = _type_annotations[node.value] = \
-            parent_schema.args[node.name.value]
+
+        node_schema = parent_schema.args[node.name.value]
+        setattr(node, SCHEMA_ATTR, node_schema)
+        setattr(node.value, SCHEMA_ATTR, node_schema.type)
 
     def enter_object_field(self, node, key, parent, path, ancestors):
         # Find the parent type, and then find our type on that.
         for p in reversed([*ancestors, parent]):
             # This should go until we find a object_value
-            parent_schema = get_type(p)
+            parent_schema = get_type(p, unwrap=True)
             if parent_schema is not None:
                 break
+
         assert isinstance(parent_schema, graphql.GraphQLNamedType)
-        _type_annotations[node] = _type_annotations[node.selection_set] = \
-            parent_schema.fields[node.name.value]
+
+        node_schema = parent_schema.fields[node.name.value]
+        setattr(node, SCHEMA_ATTR, node_schema)
+        setattr(node.value, SCHEMA_ATTR, node_schema.type)
 
     # Variables
     def exit_variable_definition(self, node, key, parent, path, ancestors):
         # Copy from the type
         t = get_type(node.type)
         assert t is not None
-        _type_annotations[node] = t
+        setattr(node, SCHEMA_ATTR, t)
 
     # Literals
     def enter_object_value(self, node, key, parent, path, ancestors):
@@ -118,33 +149,34 @@ class TypeAnnotationVisitor(graphql.Visitor):
     def enter_int_value(self, node, key, parent, path, ancestors):
         # Confirm nothing hinky is going on
         t = get_type(node)
-        assert t == self.schema.get_type('Int')
-        _type_annotations[node] = self.schema.get_type('Int')
+        assert graphql.get_named_type(t) == self.schema.get_type('Int')
+        setattr(node, SCHEMA_ATTR, self.schema.get_type('Int'))
 
     def enter_float_value(self, node, key, parent, path, ancestors):
         # Confirm nothing hinky is going on
         t = get_type(node)
-        assert t == self.schema.get_type('Float')
-        _type_annotations[node] = self.schema.get_type('Float')
+        assert graphql.get_named_type(t) == self.schema.get_type('Float')
+        setattr(node, SCHEMA_ATTR, self.schema.get_type('Float'))
 
     def enter_string_value(self, node, key, parent, path, ancestors):
         # Confirm nothing hinky is going on
         t = get_type(node)
-        assert t == self.schema.get_type('String')
-        _type_annotations[node] = self.schema.get_type('String')
+        assert graphql.get_named_type(t) == self.schema.get_type('String')
+        setattr(node, SCHEMA_ATTR, self.schema.get_type('String'))
 
     def enter_boolean_value(self, node, key, parent, path, ancestors):
         # Confirm nothing hinky is going on
         t = get_type(node)
-        assert t == self.schema.get_type('Boolean')
-        _type_annotations[node] = self.schema.get_type('Boolean')
+        assert graphql.get_named_type(t) == self.schema.get_type('Boolean')
+        setattr(node, SCHEMA_ATTR, self.schema.get_type('Boolean'))
 
     def enter_list_value(self, node, key, parent, path, ancestors):
         # Copy our type to the kids
         schema = get_type(node)
         assert schema is not None
+        assert isinstance(schema, graphql.GraphQLList)
         for child in node.values:
-            _type_annotations[child] = schema.of_type
+            setattr(child, SCHEMA_ATTR, schema.of_type)
 
     def enter_variable(self, node, key, parent, path, ancestors):
         # TODO: Check the type given to us matches the declared type
@@ -169,7 +201,7 @@ class RefAnnotationVisitor(graphql.Visitor):
 
     def enter_variable(self, node, key, parent, path, ancestors):
         assert self.scope is not None
-        _ref_annotations[node] = self.scope[node.name.value]
+        setattr(node, DEF_ATTR, self.scope[node.name.value])
 
     def enter_fragment_spread(self, node, key, parent, path, ancestors):
         # Find the document
@@ -186,7 +218,7 @@ class RefAnnotationVisitor(graphql.Visitor):
         else:
             return
 
-        _ref_annotations[node] = defi
+        setattr(node, DEF_ATTR, defi)
 
 
 def annotate(ast, schema):
