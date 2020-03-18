@@ -10,6 +10,7 @@ from import_x import ExtensionLoader
 
 from ._mod_impl import __query__
 from .providers import query_for_schema, get_additional_kwargs
+from .helpers.types import annotate
 
 
 def build_func(provider, definition, schema):
@@ -127,9 +128,12 @@ def load_and_validate(path, fobj=None):
 
     if provider is None:
         raise RuntimeError(f"No provider defined in {path}")
-    else:
-        schema = query_for_schema(provider)
-        errors = graphql.validate(schema, gast)
+
+    schema = query_for_schema(provider)
+    errors = graphql.validate(schema, gast)
+
+    # Just automatically compute type and ref annotations. We'll probably need it.
+    annotate(gast, schema)
 
     return provider, gast, schema, errors
 
