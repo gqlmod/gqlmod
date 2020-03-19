@@ -108,6 +108,12 @@ class TypeAnnotationVisitor(graphql.Visitor):
         if isinstance(parent, graphql.VariableDefinitionNode):
             self.apply_variable_definition(parent)
 
+    # Directives
+    def enter_directive(self, node, key, parent, path, ancestors):
+        name = node.name.value
+        node_type = self.schema.get_directive(name)
+        setattr(node, SCHEMA_ATTR, node_type)
+
     # Fields
     def enter_field(self, node, key, parent, path, ancestors):
         # Find the parent type, and then find our type on that.
@@ -126,14 +132,14 @@ class TypeAnnotationVisitor(graphql.Visitor):
     def enter_argument(self, node, key, parent, path, ancestors):
         # Find the parent type, and then find our type on that.
         for p in reversed([*ancestors, parent]):
-            # This should go until we find a field
+            # This should go until we find a field or directive
             try:
                 parent_schema = getattr(p, SCHEMA_ATTR)
             except AttributeError:
                 continue
             else:
                 break
-        assert isinstance(parent_schema, graphql.GraphQLField)
+        assert isinstance(parent_schema, (graphql.GraphQLField, graphql.GraphQLDirective))
 
         node_schema = parent_schema.args[node.name.value]
         setattr(node, SCHEMA_ATTR, node_schema)
