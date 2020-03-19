@@ -4,21 +4,29 @@ Functions to help with typing of queries.
 
 import graphql
 
-__all__ = 'get_type', 'get_definition', 'annotate'
+__all__ = 'get_type', 'get_schema', 'get_definition', 'annotate'
 
 SCHEMA_ATTR = '__schema'  # The schema object that provides the definition of this node
 DEF_ATTR = '__def'  # The query object that provides the definition of this node (variables, fragments)
 
 
-def get_type(node, *, unwrap=False):
+def get_schema(node):
     """
-    Gets the schema type of the given node.
+    Gets the schema definition of the given ast node.
     """
     try:
-        qltype = getattr(node, SCHEMA_ATTR)
+        return getattr(node, SCHEMA_ATTR)
     except AttributeError:
         return
 
+
+def get_type(node, *, unwrap=False):
+    """
+    Gets the schema type of the given ast node.
+
+    If unwrap is true, also remove any wrapping types.
+    """
+    qltype = get_schema(node)
     if isinstance(qltype, graphql.GraphQLField):
         qltype = qltype.type
 
