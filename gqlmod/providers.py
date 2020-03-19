@@ -67,6 +67,21 @@ def with_provider(name, **params):
     provider_map.reset(token)
 
 
+@contextlib.contextmanager
+def _mock_provider(name, instance):
+    """
+    Inserts and activates the given provider.
+
+    FOR TEST INFRASTRUCTURE ONLY.
+    """
+    pmap = _get_pmap()
+    newmap = pmap.copy()
+    newmap[name] = instance
+    token = provider_map.set(newmap)
+    yield
+    provider_map.reset(token)
+
+
 def exec_query(provider, query, variables):
     """
     Executes a query with the given variables.
