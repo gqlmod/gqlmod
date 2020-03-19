@@ -75,27 +75,38 @@ class TypeAnnotationVisitor(graphql.Visitor):
         assert t is not None
         setattr(node, SCHEMA_ATTR, t)
 
+    def apply_inline_fragment(self, node):
+        t = get_type(node.type_condition)
+        setattr(node, SCHEMA_ATTR, t)
+        setattr(node.selection_set, SCHEMA_ATTR, t)
+
     # Explict type definitions
     def enter_named_type(self, node, key, parent, path, ancestors):
         name = node.name.value
         node_type = self.schema.get_type(name)
         setattr(node, SCHEMA_ATTR, node_type)
-
-        if isinstance(parent, graphql.InlineFragmentNode):
-            setattr(parent, SCHEMA_ATTR, node_type)
-            setattr(parent.selection_set, SCHEMA_ATTR, node_type)
+        self._type_parent(node, parent)
 
     def leave_non_null_type(self, node, key, parent, path, ancestors):
         # Copy & wrap the type from the inner
         t = get_type(node.type)
         assert t is not None
         setattr(node, SCHEMA_ATTR, graphql.GraphQLNonNull(t))
+        self._type_parent(node, parent)
 
     def leave_list_type(self, node, key, parent, path, ancestors):
         # Copy & wrap the type from the inner
         t = get_type(node.type)
         assert t is not None
         setattr(node, SCHEMA_ATTR, graphql.GraphQLList(t))
+        self._type_parent(node, parent)
+
+    def _type_parent(self, node, parent):
+        if isinstance(parent, graphql.InlineFragmentNode):
+            self.apply_inline_fragment(parent)
+
+        if isinstance(parent, graphql.VariableDefinitionNode):
+            self.apply_variable_definition(parent)
 
     # Fields
     def enter_field(self, node, key, parent, path, ancestors):
@@ -143,11 +154,13 @@ class TypeAnnotationVisitor(graphql.Visitor):
         setattr(node.value, SCHEMA_ATTR, node_schema.type)
 
     # Variables
-    def exit_variable_definition(self, node, key, parent, path, ancestors):
+    def apply_variable_definition(self, node):
         # Copy from the type
         t = get_type(node.type)
         assert t is not None
         setattr(node, SCHEMA_ATTR, t)
+        if node.default_value:
+            setattr(node.default_value, SCHEMA_ATTR, t)
 
     # Literals
     def enter_object_value(self, node, key, parent, path, ancestors):
