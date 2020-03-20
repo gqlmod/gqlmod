@@ -52,9 +52,9 @@ class AiohttpProvider:
         self.modify_request_args(variables, kwargs)
 
         resp = await self.session.post(self.endpoint, **kwargs)
+        result = await resp.json()
         resp.raise_for_status()
 
-        result = await resp.json()
         assert 'errors' in result or 'data' in result, 'Received non-compatible response "{}"'.format(result)
         return graphql.ExecutionResult(
             errors=result.get('errors'),
