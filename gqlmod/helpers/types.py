@@ -124,7 +124,10 @@ class TypeAnnotationVisitor(graphql.Visitor):
                 break
         assert isinstance(parent_schema, graphql.GraphQLNamedType)
 
-        node_schema = parent_schema.fields[node.name.value]
+        try:
+            node_schema = parent_schema.fields[node.name.value]
+        except KeyError:
+            raise ValueError(f"Could not find {node.name.value} in the fields of {parent_schema.name}; this may be a validation error")
         setattr(node, SCHEMA_ATTR, node_schema)
         if node.selection_set is not None:
             setattr(node.selection_set, SCHEMA_ATTR, node_schema)
