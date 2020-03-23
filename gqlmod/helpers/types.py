@@ -118,7 +118,7 @@ class TypeAnnotationVisitor(graphql.Visitor):
     def enter_field(self, node, key, parent, path, ancestors):
         if node.name.value == '__typename':
             # Special name
-            node_schema = graphql.GraphQLNonNull(graphql.self.schema.get_type('String'))
+            node_schema = graphql.GraphQLNonNull(self.schema.get_type('String'))
         else:
             # Find the parent type, and then find our type on that.
             for p in reversed([*ancestors, parent]):

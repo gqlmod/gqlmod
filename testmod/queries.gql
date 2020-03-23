@@ -2,6 +2,7 @@
 
 query HeroForEpisode($ep: Episode!) {
   hero(episode: $ep) {
+    __typename
     name
     ... on Droid {
       primaryFunction
