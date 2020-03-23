@@ -118,7 +118,7 @@ class TypeAnnotationVisitor(graphql.Visitor):
     def enter_field(self, node, key, parent, path, ancestors):
         # Find the parent type, and then find our type on that.
         for p in reversed([*ancestors, parent]):
-            # This should go until we find a field or operation definition
+            # This should go until we find a field, operation definition, inline fragment, ...
             parent_schema = get_type(p, unwrap=True)
             if parent_schema is not None:
                 break
