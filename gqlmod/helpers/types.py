@@ -116,18 +116,22 @@ class TypeAnnotationVisitor(graphql.Visitor):
 
     # Fields
     def enter_field(self, node, key, parent, path, ancestors):
-        # Find the parent type, and then find our type on that.
-        for p in reversed([*ancestors, parent]):
-            # This should go until we find a field, operation definition, inline fragment, ...
-            parent_schema = get_type(p, unwrap=True)
-            if parent_schema is not None:
-                break
-        assert isinstance(parent_schema, graphql.GraphQLNamedType)
+        if node.name.value == '__typename':
+            # Special name
+            node_schema = graphql.GraphQLNonNull(graphql.self.schema.get_type('String'))
+        else:
+            # Find the parent type, and then find our type on that.
+            for p in reversed([*ancestors, parent]):
+                # This should go until we find a field, operation definition, inline fragment, ...
+                parent_schema = get_type(p, unwrap=True)
+                if parent_schema is not None:
+                    break
+            assert isinstance(parent_schema, graphql.GraphQLNamedType)
 
-        try:
-            node_schema = parent_schema.fields[node.name.value]
-        except KeyError:
-            raise ValueError(f"Could not find {node.name.value} in the fields of {parent_schema.name}; this may be a validation error")
+            try:
+                node_schema = parent_schema.fields[node.name.value]
+            except KeyError:
+                raise ValueError(f"Could not find {node.name.value} in the fields of {parent_schema.name}; this may be a validation error")
         setattr(node, SCHEMA_ATTR, node_schema)
         if node.selection_set is not None:
             setattr(node.selection_set, SCHEMA_ATTR, node_schema)
