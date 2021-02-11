@@ -6,7 +6,10 @@ import contextvars
 import collections
 import functools
 
-import pkg_resources
+try:
+    import importlib.metadata as ilmd
+except ImportError:
+    import importlib_metadata as ilmd
 import graphql
 
 
@@ -23,7 +26,7 @@ def load_provider_factory(name):
     """
     try:
         # TODO: Warn if there's more than one?
-        ep = next(pkg_resources.iter_entry_points('graphql_providers', name))
+        ep = next(ep for ep in ilmd.entry_points()['graphql_providers'] if ep.name == name)
         return ep.load()
     except StopIteration:
         raise ValueError(f"{name} is not a registered provider")
