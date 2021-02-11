@@ -162,9 +162,6 @@ class GqlLoader(ExtensionLoader):
         ], **py38)
         ast.fix_missing_locations(mod)
 
-        # import astor
-        # print(astor.to_source(mod))
-
         module.__query__ = __query__
         code = compile(mod, path, 'exec')
         exec(code, vars(module))
