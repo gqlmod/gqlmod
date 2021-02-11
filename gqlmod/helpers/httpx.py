@@ -9,7 +9,7 @@ import httpx
 import graphql
 
 
-class AiohttpProvider:
+class HttpxProvider:
     """
     Help build an HTTP-based provider based on httpx.
 
