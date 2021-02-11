@@ -1,6 +1,5 @@
-import gqlmod
-gqlmod.enable_gql_import()
-import testmod.queries  # noqa
+import gqlmod.enable  # noqa
+import testmod.queries
 
 
 def test_names():
@@ -17,3 +16,11 @@ def test_data():
                              {'name': 'Han Solo'},
                              {'name': 'Leia Organa'}],
                  'name': 'R2-D2'}}
+
+
+def test_imports():
+    import testmod.queries as q
+    import testmod.queries_sync as qs
+    import testmod.queries_async as qa
+
+    assert q.__file__ == qs.__file__ == qa.__file__
