@@ -22,13 +22,22 @@ A provider class is only required to be callable with a specific signature.
         def __init__(self, token=None):
             self.token = token
 
-        def __call__(self, query, variables):
+        def query_sync(self, query, variables):
             # Do stuff here
 
             return graphql.ExecutionResult(
                 errors=[],
                 data={'spam': 'eggs'}
             )
+
+        async def query_async(self, query, variables):
+            # Do stuff here, asynchronously
+
+            return graphql.ExecutionResult(
+                errors=[],
+                data={'spam': 'eggs'}
+            )
+
 
 The arguments it takes are:
 
@@ -83,17 +92,10 @@ In order to help with common cases, gqlmod ships with several helpers
 Note that many of them have additional requirements, which are encapsulated in extras.
 
 
-urllib
+httpx
 ~~~~~~
 
-.. automodule:: gqlmod.helpers.urllib
-   :members:
-
-
-aiohttp
-~~~~~~~
-
-.. automodule:: gqlmod.helpers.aiohttp
+.. automodule:: gqlmod.helpers.httpx
    :members:
 
 

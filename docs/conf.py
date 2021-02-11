@@ -179,7 +179,7 @@ epub_exclude_files = ['search.html']
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'graphql': ('https://graphql-core-next.readthedocs.io/en/latest/', None)
+    'graphql': ('https://graphql-core-3.readthedocs.io/en/latest/', None)
 }
 
 # -- Options for todo extension ----------------------------------------------

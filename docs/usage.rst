@@ -103,7 +103,7 @@ Here is a list of some maintained providers:
 
 * ``starwars``: Builtin! A demo provider that works on static constant data.
 * ``cirrus-ci``: From `gqlmod-cirrusci <https://pypi.org/project/gqlmod-cirrusci/>`_, connects to `Cirrus CI <https://cirrus-ci.org/>`_
-* ``github``: From `gqlmod-github <https://pypi.org/project/gqlmod-github/>`_, connects to the `GitHub v4 API <https://developer.github.com/v4/>`_
+* ``github``: From `gqlmod-github <https://pypi.org/project/gqlmod-github/>`_, connects to the `GitHub v4 API <https://docs.github.com/en/graphql>`_
 
 You may be able to discover a provider at this places:
 

@@ -93,7 +93,7 @@ def exec_query(provider, query, variables):
     API, this is likely undocumented.
     """
     prov = get_provider(provider)
-    return prov(query, variables)
+    return prov.query_sync(query, variables)
 
 
 @functools.lru_cache()

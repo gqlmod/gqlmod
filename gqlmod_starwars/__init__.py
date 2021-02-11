@@ -8,5 +8,5 @@ from .schema import star_wars_schema
 
 
 class StarWarsProvider:
-    def __call__(self, query, variables):
+    def query_sync(self, query, variables):
         return graphql_sync(star_wars_schema, query, variable_values=variables)

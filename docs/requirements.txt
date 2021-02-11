@@ -3,4 +3,4 @@ sphinx_rtd_theme
 git+https://github.com/AstraLuma/pygments-graphql-lexer.git
 
 # These are required for helper docs
-aiohttp
+httpx
