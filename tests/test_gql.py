@@ -1,5 +1,8 @@
+import pytest
+
 import gqlmod.enable  # noqa
-import testmod.queries
+import testmod.queries_sync
+import testmod.queries_async
 
 
 def test_names():
@@ -8,8 +11,19 @@ def test_names():
     assert all(callable(getattr(testmod.queries, name)) for name in qnames)
 
 
-def test_data():
-    result = testmod.queries.HeroNameAndFriends()
+def test_data_sync():
+    result = testmod.queries_sync.HeroNameAndFriends()
+    assert not result.errors
+    assert result.data == {
+        'hero': {'friends': [{'name': 'Luke Skywalker'},
+                             {'name': 'Han Solo'},
+                             {'name': 'Leia Organa'}],
+                 'name': 'R2-D2'}}
+
+
+@pytest.mark.asyncio
+async def test_data_async():
+    result = await testmod.queries_async.HeroNameAndFriends()
     assert not result.errors
     assert result.data == {
         'hero': {'friends': [{'name': 'Luke Skywalker'},
