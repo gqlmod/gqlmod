@@ -88,7 +88,7 @@ def walk_query(query_ast, schema):
 
     * the name path (Tuple[str])
     * the AST node of the field in the query (:py:class:`graphql.language.ast.FieldNode`)
-    * the schema node of the field (:py:class:`graphql.type.definition.GraphQLField`)
+    * the schema node of the field (:py:class:`graphql.type.GraphQLField`)
     """
     if query_ast.operation == graphql.OperationType.QUERY:
         root = schema.query_type
@@ -105,7 +105,7 @@ def walk_variables(query_ast, schema):
     Walks the variables (by AST), generating 2-tuples of:
 
     * the name path (Tuple[str])
-    * the schema node of the field (:py:class:`graphql.type.definition.GraphQLField`)
+    * the schema node of the field (:py:class:`graphql.type.GraphQLField`)
 
     Note that the paths are rooted in the name of the variable, but the variable
     itself is not produced.

@@ -84,21 +84,6 @@ files to use. This can take a few different forms, depending on your project. A 
     "starwars" = "gqlmod_starwars:StarWarsProvider'"
 
 
-Helpers
--------
-
-In order to help with common cases, gqlmod ships with several helpers
-
-Note that many of them have additional requirements, which are encapsulated in extras.
-
-
-httpx
-~~~~~~
-
-.. automodule:: gqlmod.helpers.httpx
-   :members:
-
-
 Extensions
 ----------
 
@@ -142,3 +127,40 @@ provider.
 **Returns**: A :py:class:`dict` of the names mapping to either simple values or
 :py:class:`ast.AST` instances. (Note that the returned AST will be embedded into
 a right-hand expression context.)
+
+
+Helpers
+-------
+
+In order to help with common cases, gqlmod ships with several helpers
+
+Note that many of them have additional requirements, which are encapsulated in extras.
+
+
+httpx
+~~~~~~
+
+.. automodule:: gqlmod.helpers.httpx
+   :members:
+
+
+types
+~~~~~
+
+.. automodule:: gqlmod.helpers.types
+   :members:
+   :undoc-members:
+
+
+utils
+~~~~~
+
+.. automodule:: gqlmod.helpers.utils
+   :members:
+   :undoc-members:
+
+
+testing
+~~~~~~~
+
+.. autofunction:: gqlmod.providers._mock_provider
