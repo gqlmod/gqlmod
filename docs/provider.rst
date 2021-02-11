@@ -149,6 +149,7 @@ types
 
 .. automodule:: gqlmod.helpers.types
    :members:
+   :undoc-members:
 
 
 utils
@@ -156,3 +157,10 @@ utils
 
 .. automodule:: gqlmod.helpers.utils
    :members:
+   :undoc-members:
+
+
+testing
+~~~~~~~
+
+.. autofunction:: gqlmod.providers._mock_provider
