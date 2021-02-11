@@ -35,7 +35,7 @@ docs_task:
 
   script:
     - make -C docs/ linkcheck
-    - make -C docs/ html
+    - make -C docs/ SPHINXOPTS="-W --keep-going" html
 
 
 
