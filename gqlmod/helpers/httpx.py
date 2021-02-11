@@ -69,7 +69,7 @@ class HttpxProvider:
             data=result.get('data')
         )
 
-    def query_async(self, query, variables):
+    async def query_async(self, query, variables):
         req = self.build_request(query, variables)
 
         resp = await self.session_sync.send(req)
