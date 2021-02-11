@@ -36,7 +36,7 @@ query HeroForEpisode($ep: Episode!) {
 And then you can just import it and use it:
 
 ```python
-import gqlmod  # noqa
+import gqlmod.enable  # noqa
 from mygql import HeroForEpisode
 
 print(HeroForEpisode(ep='JEDI'))
