@@ -31,8 +31,7 @@ Example
 .. code-block:: python
     :caption: app.py
     
-    import gqlmod
-    gqlmod.enable_gql_import()
+    import gqlmod.enable  # noqa
 
     from queries import HeroForEpisode
 
