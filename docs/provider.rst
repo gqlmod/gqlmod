@@ -37,6 +37,8 @@ A provider class is only required to be callable with a specific signature.
                 errors=[],
                 data={'spam': 'eggs'}
             )
+
+
 The arguments it takes are:
 
 * ``query``: (string) The query to give to the server
