@@ -164,7 +164,8 @@ class GqlLoader(ExtensionLoader):
             suffix = ''
 
         spec = super().find_spec(fullname, path, *p, **kw)
-        spec.name += suffix
+        if spec is not None:
+            spec.name += suffix
         return spec
 
     @staticmethod

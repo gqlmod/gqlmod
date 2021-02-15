@@ -33,6 +33,11 @@ async def test_data_async():
                  'name': 'R2-D2'}}
 
 
+def test_random_import():
+    # Import a random stdlib module that nobody should use
+    import imaplib  # noqa    
+
+
 def test_imports():
     import testmod.queries as q
     import testmod.queries_sync as qs
