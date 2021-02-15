@@ -14,7 +14,8 @@ import graphql
 
 
 __all__ = (
-    'with_provider', 'exec_query', 'query_for_schema', 'get_additional_kwargs',
+    'with_provider', 'exec_query_sync', 'exec_query_async', 'query_for_schema',
+    'get_additional_kwargs',
 )
 
 provider_map = contextvars.ContextVar('provider_map')
@@ -44,6 +45,7 @@ def _get_pmap():
     try:
         pmap = provider_map.get()
     except LookupError:
+        # This is if the contextvar hasn't been set yet
         pmap = ProviderDict()
         provider_map.set(pmap)
     return pmap
@@ -104,7 +106,7 @@ async def exec_query_async(provider, query, **variables):
     API, this is likely undocumented.
     """
     prov = get_provider(provider)
-    return await prov.query_sync(query, variables)
+    return await prov.query_async(query, variables)
 
 
 @functools.lru_cache()

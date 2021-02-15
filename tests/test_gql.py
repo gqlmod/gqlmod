@@ -1,17 +1,17 @@
 import pytest
 
 import gqlmod.enable  # noqa
-import testmod.queries_sync
-import testmod.queries_async
 
 
 def test_names():
+    import testmod.queries
     qnames = {name for name in dir(testmod.queries) if not name.startswith('_')}
     assert qnames == {'Hero', 'HeroForEpisode', 'HeroNameAndFriends'}
     assert all(callable(getattr(testmod.queries, name)) for name in qnames)
 
 
 def test_data_sync():
+    import testmod.queries_sync
     result = testmod.queries_sync.HeroNameAndFriends()
     assert not result.errors
     assert result.data == {
@@ -23,6 +23,7 @@ def test_data_sync():
 
 @pytest.mark.asyncio
 async def test_data_async():
+    import testmod.queries_async
     result = await testmod.queries_async.HeroNameAndFriends()
     assert not result.errors
     assert result.data == {
@@ -38,3 +39,4 @@ def test_imports():
     import testmod.queries_async as qa
 
     assert q.__file__ == qs.__file__ == qa.__file__
+    assert q is not qs is not qa

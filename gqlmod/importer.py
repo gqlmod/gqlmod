@@ -80,6 +80,9 @@ def build_param(var):
 
 
 def value2pyliteral(val):  # noqa: C901
+    """
+    Transforms a python value into a literal in AST form.
+    """
     if val is None:
         return ast.NameConstant(value=None)
     elif val is ...:
@@ -114,6 +117,9 @@ def value2pyliteral(val):  # noqa: C901
 
 
 def gqlliteral2value(node):
+    """
+    Transforms a GraphQL query AST into a python value.
+    """
     if node is None:
         return None
     return graphql.value_from_ast_untyped(node)
@@ -150,10 +156,16 @@ class GqlLoader(ExtensionLoader):
 
         if fullname.endswith('_async'):
             fullname = fullname[:-len('_async')]
+            suffix = '_async'
         elif fullname.endswith('_sync'):
             fullname = fullname[:-len('_sync')]
+            suffix = '_sync'
+        else:
+            suffix = ''
 
-        return super().find_spec(fullname, path, *p, **kw)
+        spec = super().find_spec(fullname, path, *p, **kw)
+        spec.name += suffix
+        return spec
 
     @staticmethod
     def handle_module(module, path):
@@ -181,7 +193,6 @@ class GqlLoader(ExtensionLoader):
         ], **py38)
         ast.fix_missing_locations(mod)
 
-        # breakpoint()
         module.__builtins__ = _mod_impl
         code = compile(mod, path, 'exec')
         exec(code, vars(module))
