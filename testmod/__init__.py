@@ -1,2 +1,1 @@
-import gqlmod
-gqlmod.enable_gql_import()
+import gqlmod.enable  # noqa

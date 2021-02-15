@@ -14,7 +14,8 @@ import graphql
 
 
 __all__ = (
-    'with_provider', 'exec_query', 'query_for_schema', 'get_additional_kwargs',
+    'with_provider', 'exec_query_sync', 'exec_query_async', 'query_for_schema',
+    'get_additional_kwargs',
 )
 
 provider_map = contextvars.ContextVar('provider_map')
@@ -44,6 +45,7 @@ def _get_pmap():
     try:
         pmap = provider_map.get()
     except LookupError:
+        # This is if the contextvar hasn't been set yet
         pmap = ProviderDict()
         provider_map.set(pmap)
     return pmap
@@ -85,15 +87,26 @@ def _mock_provider(name, instance):
     provider_map.reset(token)
 
 
-def exec_query(provider, query, variables):
+def exec_query_sync(provider, query, **variables):
     """
-    Executes a query with the given variables.
+    Executes a query with the given variables. (Synchronous version)
 
     NOTE: Some providers may expect additional variables. As this is an internal
     API, this is likely undocumented.
     """
     prov = get_provider(provider)
     return prov.query_sync(query, variables)
+
+
+async def exec_query_async(provider, query, **variables):
+    """
+    Executes a query with the given variables. (Asynchronous version)
+
+    NOTE: Some providers may expect additional variables. As this is an internal
+    API, this is likely undocumented.
+    """
+    prov = get_provider(provider)
+    return await prov.query_async(query, variables)
 
 
 @functools.lru_cache()
@@ -108,7 +121,7 @@ def query_for_schema(provider):
     else:
         query = graphql.get_introspection_query(descriptions=True)
 
-        res = exec_query(provider, query, {})
+        res = exec_query_sync(provider, query)
         assert not res.errors
         schema = graphql.build_client_schema(res.data)
     schema = insert_builtins(schema)

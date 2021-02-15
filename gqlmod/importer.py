@@ -8,12 +8,12 @@ import sys
 import graphql
 from import_x import ExtensionLoader
 
-from ._mod_impl import __query__
+from . import _mod_impl
 from .providers import query_for_schema, get_additional_kwargs
 from .helpers.types import annotate
 
 
-def build_func(provider, definition, schema):
+def build_func(provider, definition, schema, is_async):
     """
     Builds a python function from a GraphQL AST definition
     """
@@ -21,6 +21,8 @@ def build_func(provider, definition, schema):
     source = graphql.print_ast(definition)
     assert definition.operation != graphql.OperationType.SUBSCRIPTION
     params = [build_param(var) for var in definition.variable_definitions]
+    query_func = '__aquery__' if is_async else '__query__'
+
     # TODO: Line numbers
 
     if sys.version_info >= (3, 8):
@@ -44,7 +46,7 @@ def build_func(provider, definition, schema):
         body=[
             ast.Return(
                 value=ast.Call(
-                    func=ast.Name(id='__query__', ctx=ast.Load()),
+                    func=ast.Name(id=query_func, ctx=ast.Load()),
                     args=[
                         value2pyliteral(provider),
                         value2pyliteral(source),
@@ -78,6 +80,9 @@ def build_param(var):
 
 
 def value2pyliteral(val):  # noqa: C901
+    """
+    Transforms a python value into a literal in AST form.
+    """
     if val is None:
         return ast.NameConstant(value=None)
     elif val is ...:
@@ -112,6 +117,9 @@ def value2pyliteral(val):  # noqa: C901
 
 
 def gqlliteral2value(node):
+    """
+    Transforms a GraphQL query AST into a python value.
+    """
     if node is None:
         return None
     return graphql.value_from_ast_untyped(node)
@@ -142,8 +150,32 @@ class GqlLoader(ExtensionLoader):
     extension = '.gql'
     auto_enable = True
 
+    @classmethod
+    def find_spec(cls, fullname, path, *p, **kw):
+        """Return the spec of the module."""
+
+        if fullname.endswith('_async'):
+            fullname = fullname[:-len('_async')]
+            suffix = '_async'
+        elif fullname.endswith('_sync'):
+            fullname = fullname[:-len('_sync')]
+            suffix = '_sync'
+        else:
+            suffix = ''
+
+        spec = super().find_spec(fullname, path, *p, **kw)
+        if spec is not None:
+            spec.name += suffix
+        return spec
+
     @staticmethod
     def handle_module(module, path):
+        is_async = False
+        if module.__name__.endswith('_async'):
+            is_async = True
+        elif module.__name__.endswith('_sync'):
+            is_async = False
+
         provider, gast, schema, errors = load_and_validate(path)
         if errors:
             raise find_first_error(errors)
@@ -156,20 +188,20 @@ class GqlLoader(ExtensionLoader):
             py38 = {}
 
         mod = ast.Module(body=[
-            build_func(provider, defin, schema)
+            build_func(provider, defin, schema, is_async)
             for defin in gast.definitions
             if defin.kind == 'operation_definition'
         ], **py38)
         ast.fix_missing_locations(mod)
 
-        module.__query__ = __query__
+        module.__builtins__ = _mod_impl
         code = compile(mod, path, 'exec')
         exec(code, vars(module))
 
 
 def read_code(fobj):
     provider = None
-    # Provider is "#~provider~", ignoring whitespace, and most be in an initial
+    # Provider is "#~provider~", ignoring whitespace, and must be in an initial
     # block of #'s
     for line in fobj:
         line = line.strip().replace(' ', '').replace('\t', '')
