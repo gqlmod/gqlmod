@@ -9,6 +9,7 @@ import graphql
 from import_x import ExtensionLoader
 
 from . import _mod_impl
+from .errors import MissingProviderError, from_graphql_validate
 from .providers import query_for_schema, get_additional_kwargs
 from .helpers.types import annotate
 
@@ -128,20 +129,26 @@ def gqlliteral2value(node):
 def load_and_validate(path, fobj=None):
     if fobj is None:
         with open(path, 'rt', encoding='utf-8') as fobj:
-            provider, code = read_code(fobj)
+            provider, code, has_code = read_code(fobj)
     else:
-        provider, code = read_code(fobj)
+        provider, code, has_code = read_code(fobj)
 
-    gast = graphql.parse(graphql.Source(code, path))
+    # graphql can't handle empty files
+    if has_code:
+        gast = graphql.parse(graphql.Source(code, path))
+    else:
+        gast = graphql.language.DocumentNode(definitions=[])
 
     if provider is None:
-        raise RuntimeError(f"No provider defined in {path}")
+        # FIXME: Lump this with above
+        raise MissingProviderError(path)
 
     schema = query_for_schema(provider)
     errors = graphql.validate(schema, gast)
 
-    # Just automatically compute type and ref annotations. We'll probably need it.
-    annotate(gast, schema)
+    if not errors:
+        # Just automatically compute type and ref annotations. We'll probably need it.
+        annotate(gast, schema)
 
     return provider, gast, schema, errors
 
@@ -178,7 +185,7 @@ class GqlLoader(ExtensionLoader):
 
         provider, gast, schema, errors = load_and_validate(path)
         if errors:
-            raise find_first_error(errors)
+            raise from_graphql_validate(errors)
 
         if sys.version_info >= (3, 8):
             py38 = {
@@ -203,26 +210,24 @@ def read_code(fobj):
     provider = None
     # Provider is "#~provider~", ignoring whitespace, and must be in an initial
     # block of #'s
+    loc = 0
     for line in fobj:
         line = line.strip().replace(' ', '').replace('\t', '')
         if line.startswith('#~') and line.endswith('~'):
             provider = line[2:-1]
             break
         elif not line.startswith('#'):
+            loc += bool(line)
             break
 
+    # Count the remaining LOCs
+    for line in fobj:
+        line = line.strip().replace(' ', '').replace('\t', '')
+        if line:
+            loc += 1
+
     fobj.seek(0)
-    return provider, fobj.read()
-
-
-def find_first_error(errors):
-    locmap = {
-        loc: err
-        for err in errors
-        for loc in err.locations
-    }
-    locs = sorted(locmap.keys(), key=lambda l: (l.line, l.column))
-    return locmap[locs[0]]
+    return provider, fobj.read(), bool(loc)
 
 
 def scan_file(path, fobj=None):
