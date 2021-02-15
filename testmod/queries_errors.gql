@@ -1,0 +1,8 @@
+#~starwars~
+
+query DoesNotExist($ep: Episode!) {
+  hero(episode: $ep) {
+    __typename
+    spam
+  }
+}

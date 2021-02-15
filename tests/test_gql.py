@@ -1,3 +1,4 @@
+import graphql
 import pytest
 
 import gqlmod.enable  # noqa
@@ -45,3 +46,17 @@ def test_imports():
 
     assert q.__file__ == qs.__file__ == qa.__file__
     assert q is not qs is not qa
+
+
+def test_errors():
+    with pytest.raises((gqlmod.errors.MultiErrors, graphql.error.GraphQLError)):
+        import testmod.queries_errors  # noqa
+
+
+def test_no_provider():
+    with pytest.raises(gqlmod.errors.MissingProviderError):
+        import testmod.queries_noprovider  # noqa
+
+
+def test_empty():
+    import testmod.queries_empty # noqa
