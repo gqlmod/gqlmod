@@ -13,9 +13,8 @@ def test_names():
 
 def test_data_sync():
     import testmod.queries_sync
-    result = testmod.queries_sync.HeroNameAndFriends()
-    assert not result.errors
-    assert result.data == {
+    data = testmod.queries_sync.HeroNameAndFriends()
+    assert data == {
         'hero': {'friends': [{'name': 'Luke Skywalker'},
                              {'name': 'Han Solo'},
                              {'name': 'Leia Organa'}],
@@ -25,9 +24,8 @@ def test_data_sync():
 @pytest.mark.asyncio
 async def test_data_async():
     import testmod.queries_async
-    result = await testmod.queries_async.HeroNameAndFriends()
-    assert not result.errors
-    assert result.data == {
+    data = await testmod.queries_async.HeroNameAndFriends()
+    assert data == {
         'hero': {'friends': [{'name': 'Luke Skywalker'},
                              {'name': 'Han Solo'},
                              {'name': 'Leia Organa'}],
