@@ -12,6 +12,8 @@ except ImportError:
     import importlib_metadata as ilmd
 import graphql
 
+from .errors import MultiErrors
+
 
 __all__ = (
     'with_provider', 'exec_query_sync', 'exec_query_async', 'query_for_schema',
@@ -87,6 +89,31 @@ def _mock_provider(name, instance):
     provider_map.reset(token)
 
 
+def _process_result(res):
+    if isinstance(res, dict):
+        data = res.get('data', None)
+        errors = res.get('errors', [])
+    elif isinstance(res, graphql.ExecutionResult):
+        data = res.data
+        errors = res.errors
+    else:
+        raise TypeError(
+            f"Can't handle result of type {type(res)}. (This is probably a bug with the provider.)"
+        )
+
+    if errors:
+        # Errors are present. Discard the data and raise that.
+        # TODO: Map the error locations back to the source file's location
+        assert len(errors) > 0
+        if len(errors) == 1:
+            raise errors[0]
+        else:
+            raise MultiErrors(errors)
+    else:
+        # No errors!
+        return data
+
+
 def exec_query_sync(provider, query, **variables):
     """
     Executes a query with the given variables. (Synchronous version)
@@ -95,7 +122,8 @@ def exec_query_sync(provider, query, **variables):
     API, this is likely undocumented.
     """
     prov = get_provider(provider)
-    return prov.query_sync(query, variables)
+    result = prov.query_sync(query, variables)
+    return _process_result(result)
 
 
 async def exec_query_async(provider, query, **variables):
@@ -106,7 +134,8 @@ async def exec_query_async(provider, query, **variables):
     API, this is likely undocumented.
     """
     prov = get_provider(provider)
-    return await prov.query_async(query, variables)
+    result = await prov.query_async(query, variables)
+    return (result)
 
 
 @functools.lru_cache()
@@ -121,9 +150,8 @@ def query_for_schema(provider):
     else:
         query = graphql.get_introspection_query(descriptions=True)
 
-        res = exec_query_sync(provider, query)
-        assert not res.errors
-        schema = graphql.build_client_schema(res.data)
+        data = exec_query_sync(provider, query)
+        schema = graphql.build_client_schema(data)
     schema = insert_builtins(schema)
     return schema
 
