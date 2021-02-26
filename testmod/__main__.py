@@ -12,11 +12,10 @@ assert all(callable(getattr(testmod.queries, name)) for name in qnames)
 
 print("")
 
-result = testmod.queries.HeroNameAndFriends()
-assert not result.errors
-pprint(result.data)
+data = testmod.queries.HeroNameAndFriends()
+pprint(data)
 
-assert result.data == {
+assert data == {
     'hero': {'friends': [{'name': 'Luke Skywalker'},
                          {'name': 'Han Solo'},
                          {'name': 'Leia Organa'}],

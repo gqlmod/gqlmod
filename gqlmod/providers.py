@@ -91,8 +91,10 @@ def _mock_provider(name, instance):
 
 def _process_result(res):
     if isinstance(res, dict):
-        data = res.get('data', None)
-        errors = res.get('errors', [])
+        # This will convert the response into the rich error type
+        res = graphql.build_response(res)
+        data = res.data
+        errors = res.data
     elif isinstance(res, graphql.ExecutionResult):
         data = res.data
         errors = res.errors
@@ -102,7 +104,7 @@ def _process_result(res):
         )
 
     if errors:
-        # Errors are present. Discard the data and raise that.
+        # Errors are present. Discard the data and raise those.
         # TODO: Map the error locations back to the source file's location
         assert len(errors) > 0
         if len(errors) == 1:
@@ -135,7 +137,7 @@ async def exec_query_async(provider, query, **variables):
     """
     prov = get_provider(provider)
     result = await prov.query_async(query, variables)
-    return (result)
+    return _process_result(result)
 
 
 @functools.lru_cache()
