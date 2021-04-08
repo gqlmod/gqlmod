@@ -38,6 +38,20 @@ Example
     data = HeroForEpisode(ep='JEDI')
     print(data)
 
+Or, if you want that in async, just add ``_async`` at the end of the module name in your import (you do not need to change the name of the actual file).
+
+.. code-block:: python
+    :caption: app_async.py
+    
+    import gqlmod.enable  # noqa
+
+    from queries_async import HeroForEpisode
+
+    data = await HeroForEpisode(ep='JEDI')
+    print(data)
+
+You may also add ``_sync`` to the import name to explicitly ask for the synchronous versions.
+
 
 Writing Query Files
 -------------------
