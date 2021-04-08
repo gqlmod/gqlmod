@@ -4,7 +4,7 @@ Using gqlmod
 Summary
 -------
 1. Install the ``gqlmod`` PyPI package, as well as any providers you need
-2. Call :py:func:`gqlmod.enable_gql_import()` as soon as possible (maybe in your ``__main__.py`` or top-level ``__init__.py``)
+2. Import :py:mod:`gqlmod.enable` as soon as possible (maybe in your ``__main__.py`` or top-level ``__init__.py``)
 3. Import your query file and start calling your queries.
 
 
@@ -35,10 +35,8 @@ Example
 
     from queries import HeroForEpisode
 
-    resp = HeroForEpisode(ep='JEDI')
-    assert not resp.errors
-
-    print(resp.data)
+    data = HeroForEpisode(ep='JEDI')
+    print(data)
 
 
 Writing Query Files
@@ -66,11 +64,9 @@ The generated functions have a specific form.
 Query functions only take keyword arguments, matching the variables defined in
 the query. Optional and arguments with defaults may naturally be omitted.
 
-The function returns a :py:class:`graphql.ExecutionResult`. It has the following
-attributes:
-
-* :py:attr:`data <graphql.ExecutionResult.data>`: The result data
-* :py:attr:`errors <graphql.ExecutionResult.errors>`: A list of errors that occurred, or an empty list if none occurred
+The function returns the data you asked for as a dict. If the server returns an
+error, it is raised. (gqlmod does not support GraphQL's partial results at this
+time.)
 
 Note that wether query functions are synchronous or asynchronous is up to the
 provider; see its documentation.
